@@ -1,0 +1,12 @@
+Django==1.8.2
+django-concurrency==0.9
+django-debug-toolbar==1.3.2
+django-dotenv==1.3.0
+django-extensions==1.5.5
+django-filter==0.10.0
+django-getenv==1.3.1
+djangorestframework==3.1.3
+psycopg2==2.6.1
+six==1.9.0
+sqlparse==0.1.15
+wheel==0.24.0
