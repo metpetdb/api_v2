@@ -13,7 +13,7 @@ from getenv import env
 
 from django.core.wsgi import get_wsgi_application
 
-dotenv.read_dotenv('../api.env')
+dotenv.read_dotenv('api.env')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", env('API_SETTINGS'))
 
 application = get_wsgi_application()
