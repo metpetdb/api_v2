@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sample',
             name='collector_id',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, blank=True, db_column='collector_id', related_name='+', null=True),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, db_column='collector_id', null=True, blank=True, related_name='+'),
         ),
         migrations.AddField(
             model_name='sample',
@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sample',
             name='minerals',
-            field=models.ManyToManyField(through='samples.SampleMineral', to='samples.Mineral'),
+            field=models.ManyToManyField(to='samples.Mineral', related_name='samples', through='samples.SampleMineral'),
         ),
         migrations.AddField(
             model_name='sample',
@@ -56,12 +56,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sample',
             name='user',
-            field=models.ForeignKey(related_name='samples', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='samples'),
         ),
         migrations.AddField(
             model_name='mineral',
             name='real_mineral',
-            field=models.ForeignKey(blank=True, to='samples.Mineral', null=True),
+            field=models.ForeignKey(to='samples.Mineral', null=True, blank=True),
         ),
         migrations.AddField(
             model_name='grid',
