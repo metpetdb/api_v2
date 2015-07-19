@@ -32,7 +32,6 @@ from api.samples.v1.views import (
 from api.users.v1.views import UserViewSet
 
 router = routers.DefaultRouter()
-router.register(r'users', UserViewSet)
 router.register(r'samples', SampleViewSet)
 router.register(r'subsamples', SubsampleViewSet)
 router.register(r'minerals', MineralViewSet)
