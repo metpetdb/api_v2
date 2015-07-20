@@ -2,14 +2,21 @@ from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 from django.db import transaction
 
+from apps.common.utils import queryset_iterator
 from apps.samples.models import (
+    Collector,
+    Grid,
     MetamorphicGrade,
     MetamorphicRegion,
+    Mineral,
     RockType,
+    Region,
+    Reference,
     Sample,
-    Region, Reference, Collector, Mineral, SampleMineral, Subsample,
-    SubsampleType, Grid)
-
+    SampleMineral,
+    Subsample,
+    SubsampleType,
+)
 from legacy.models import (
     Grids as LegacyGrid,
     MetamorphicGrades as LegacyMetamorphicGrade,
@@ -31,7 +38,6 @@ from legacy.models import (
 class Command(BaseCommand):
     help = 'Migrates legacy samples to the new data model'
 
-    @transaction.atomic
     def handle(self, *args, **options):
         self._migrate_rock_types()
         self._migrate_metamorphic_grades()
@@ -40,7 +46,7 @@ class Command(BaseCommand):
         self._migrate_subsample_types()
         self._migrate_samples()
 
-
+    @transaction.atomic
     def _migrate_samples(self):
         print("Migrating samples...")
         User = get_user_model()
@@ -49,7 +55,8 @@ class Command(BaseCommand):
         all_regions = []
         all_references = []
 
-        old_samples = LegacySample.objects.all()
+        old_samples = queryset_iterator(LegacySample.objects.all(),
+                                        chunksize=1000)
         Sample.objects.all().delete()
 
         for old_sample in old_samples:
@@ -182,6 +189,7 @@ class Command(BaseCommand):
                                         public_data=grid.public_data)
 
 
+    @transaction.atomic
     def _migrate_subsample_types(self):
         print("Migrating legacy subsample types...")
         old_records = LegacySubsampleType.objects.all()
@@ -190,6 +198,7 @@ class Command(BaseCommand):
             SubsampleType.objects.create(name=record.subsample_type)
 
 
+    @transaction.atomic
     def _migrate_rock_types(self):
         print("Migrating rock types...")
         old_records = LegacyRockType.objects.all()
@@ -199,6 +208,7 @@ class Command(BaseCommand):
             RockType.objects.create(name=record.rock_type)
 
 
+    @transaction.atomic
     def _migrate_metamorphic_grades(self):
         print("Migrating metamorphic grades...")
         old_records = LegacyMetamorphicGrade.objects.all()
@@ -208,6 +218,7 @@ class Command(BaseCommand):
             MetamorphicGrade.objects.create(name=record.name)
 
 
+    @transaction.atomic
     def _migrate_metamorphic_regions(self):
         print("Migrating metamorphic regions...")
         old_records = LegacyMetamorphicRegion.objects.all()
@@ -222,6 +233,7 @@ class Command(BaseCommand):
             )
 
 
+    @transaction.atomic
     def _migrate_minerals(self):
         print("Migrating minerals...")
         old_records = LegacyMineral.objects.all()
