@@ -28,7 +28,7 @@ class SampleViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         params = request.QUERY_PARAMS
-        qs = self.get_queryset()
+        qs = self.get_queryset().distinct()
 
         try:
             fields = params.get('fields').split(',')
