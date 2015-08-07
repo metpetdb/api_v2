@@ -49,8 +49,9 @@ INSTALLED_APPS = (
     'legacy',
     'api',
     'apps',
-    'apps.users',
+    'apps.chemical_analyses',
     'apps.samples',
+    'apps.users',
 )
 
 MIDDLEWARE_CLASSES = (
