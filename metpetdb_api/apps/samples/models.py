@@ -4,6 +4,7 @@ from concurrency.fields import AutoIncVersionField
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
+from apps.chemical_analyses.models import Element, Oxide
 
 
 class RockType(models.Model):
@@ -159,9 +160,9 @@ class MineralType(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
 
-    elements = models.ManyToManyField('chemical_analyses.Element',
+    elements = models.ManyToManyField(Element,
                                       related_name='mineral_types')
-    oxides = models.ManyToManyField('chemical_analyses.Oxide',
+    oxides = models.ManyToManyField(Oxide,
                                     related_name='mineral_types')
 
     class Meta:
