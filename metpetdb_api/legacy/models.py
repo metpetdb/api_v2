@@ -231,88 +231,88 @@ class Grids(models.Model):
 #         db_table = 'admin_users'
 #
 #
-# class ChemicalAnalyses(models.Model):
-#     chemical_analysis_id = models.BigIntegerField(primary_key=True)
-#     version = models.IntegerField()
-#     subsample = models.ForeignKey('Subsamples')
-#     public_data = models.CharField(max_length=1)
-#     reference_x = models.FloatField(blank=True, null=True)
-#     reference_y = models.FloatField(blank=True, null=True)
-#     stage_x = models.FloatField(blank=True, null=True)
-#     stage_y = models.FloatField(blank=True, null=True)
-#     image = models.ForeignKey('Images', blank=True, null=True)
-#     analysis_method = models.CharField(max_length=50, blank=True, null=True)
-#     where_done = models.CharField(max_length=50, blank=True, null=True)
-#     analyst = models.CharField(max_length=50, blank=True, null=True)
-#     analysis_date = models.DateTimeField(blank=True, null=True)
-#     date_precision = models.SmallIntegerField(blank=True, null=True)
-#     reference = models.ForeignKey('Reference', blank=True, null=True)
-#     description = models.CharField(max_length=1024, blank=True, null=True)
-#     mineral = models.ForeignKey('Minerals', blank=True, null=True)
-#     user = models.ForeignKey('Users')
-#     large_rock = models.CharField(max_length=1)
-#     total = models.FloatField(blank=True, null=True)
-#     spot_id = models.BigIntegerField()
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'chemical_analyses'
-#
-#
-# class ChemicalAnalysisElements(models.Model):
-#     chemical_analysis = models.ForeignKey(ChemicalAnalyses)
-#     element = models.ForeignKey('Elements')
-#     amount = models.FloatField()
-#     precision = models.FloatField(blank=True, null=True)
-#     precision_type = models.CharField(max_length=3, blank=True, null=True)
-#     measurement_unit = models.CharField(max_length=4, blank=True, null=True)
-#     min_amount = models.FloatField(blank=True, null=True)
-#     max_amount = models.FloatField(blank=True, null=True)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'chemical_analysis_elements'
-#         unique_together = (('chemical_analysis_id', 'element_id'),)
-#
-#
-# class ChemicalAnalysisOxides(models.Model):
-#     chemical_analysis = models.ForeignKey(ChemicalAnalyses)
-#     oxide = models.ForeignKey('Oxides')
-#     amount = models.FloatField()
-#     precision = models.FloatField(blank=True, null=True)
-#     precision_type = models.CharField(max_length=3, blank=True, null=True)
-#     measurement_unit = models.CharField(max_length=4, blank=True, null=True)
-#     min_amount = models.FloatField(blank=True, null=True)
-#     max_amount = models.FloatField(blank=True, null=True)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'chemical_analysis_oxides'
-#         unique_together = (('chemical_analysis_id', 'oxide_id'),)
-#
-#
-# class ElementMineralTypes(models.Model):
-#     element = models.ForeignKey('Elements')
-#     mineral_type = models.ForeignKey('MineralTypes')
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'element_mineral_types'
-#         unique_together = (('element_id', 'mineral_type_id'),)
-#
-#
-# class Elements(models.Model):
-#     element_id = models.SmallIntegerField(primary_key=True)
-#     name = models.CharField(unique=True, max_length=100)
-#     alternate_name = models.CharField(max_length=100, blank=True, null=True)
-#     symbol = models.CharField(unique=True, max_length=4)
-#     atomic_number = models.IntegerField()
-#     weight = models.FloatField(blank=True, null=True)
-#     order_id = models.IntegerField(blank=True, null=True)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'elements'
+class ChemicalAnalyses(models.Model):
+    chemical_analysis_id = models.BigIntegerField(primary_key=True)
+    version = models.IntegerField()
+    subsample = models.ForeignKey('Subsamples')
+    public_data = models.CharField(max_length=1)
+    reference_x = models.FloatField(blank=True, null=True)
+    reference_y = models.FloatField(blank=True, null=True)
+    stage_x = models.FloatField(blank=True, null=True)
+    stage_y = models.FloatField(blank=True, null=True)
+    # image = models.ForeignKey('Images', blank=True, null=True)
+    analysis_method = models.CharField(max_length=50, blank=True, null=True)
+    where_done = models.CharField(max_length=50, blank=True, null=True)
+    analyst = models.CharField(max_length=50, blank=True, null=True)
+    analysis_date = models.DateTimeField(blank=True, null=True)
+    date_precision = models.SmallIntegerField(blank=True, null=True)
+    reference = models.ForeignKey('Reference', blank=True, null=True)
+    description = models.CharField(max_length=1024, blank=True, null=True)
+    mineral = models.ForeignKey('Minerals', blank=True, null=True)
+    user = models.ForeignKey('Users')
+    large_rock = models.CharField(max_length=1)
+    total = models.FloatField(blank=True, null=True)
+    spot_id = models.BigIntegerField()
+
+    class Meta:
+        managed = False
+        db_table = 'chemical_analyses'
+
+
+class ChemicalAnalysisElements(models.Model):
+    chemical_analysis = models.ForeignKey(ChemicalAnalyses)
+    element = models.ForeignKey('Elements')
+    amount = models.FloatField()
+    precision = models.FloatField(blank=True, null=True)
+    precision_type = models.CharField(max_length=3, blank=True, null=True)
+    measurement_unit = models.CharField(max_length=4, blank=True, null=True)
+    min_amount = models.FloatField(blank=True, null=True)
+    max_amount = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'chemical_analysis_elements'
+        unique_together = (('chemical_analysis', 'element'),)
+
+
+class ChemicalAnalysisOxides(models.Model):
+    chemical_analysis = models.ForeignKey(ChemicalAnalyses)
+    oxide = models.ForeignKey('Oxides')
+    amount = models.FloatField()
+    precision = models.FloatField(blank=True, null=True)
+    precision_type = models.CharField(max_length=3, blank=True, null=True)
+    measurement_unit = models.CharField(max_length=4, blank=True, null=True)
+    min_amount = models.FloatField(blank=True, null=True)
+    max_amount = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'chemical_analysis_oxides'
+        unique_together = (('chemical_analysis', 'oxide'),)
+
+
+class ElementMineralTypes(models.Model):
+    element = models.ForeignKey('Elements')
+    mineral_type = models.ForeignKey('MineralTypes')
+
+    class Meta:
+        managed = False
+        db_table = 'element_mineral_types'
+        unique_together = (('element', 'mineral_type'),)
+
+
+class Elements(models.Model):
+    element_id = models.SmallIntegerField(primary_key=True)
+    name = models.CharField(unique=True, max_length=100)
+    alternate_name = models.CharField(max_length=100, blank=True, null=True)
+    symbol = models.CharField(unique=True, max_length=4)
+    atomic_number = models.IntegerField()
+    weight = models.FloatField(blank=True, null=True)
+    order_id = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'elements'
 #
 #
 # class Georeference(models.Model):
@@ -438,50 +438,49 @@ class Grids(models.Model):
 #         db_table = 'metamorphic_regions_bkup'
 #
 #
-# class MineralRelationships(models.Model):
-#     parent_mineral = models.ForeignKey('Minerals')
-#     child_mineral = models.ForeignKey('Minerals')
+class MineralRelationships(models.Model):
+    parent_mineral = models.ForeignKey('Minerals', related_name='parent')
+    child_mineral = models.ForeignKey('Minerals', related_name='child')
+
+    class Meta:
+        managed = False
+        db_table = 'mineral_relationships'
+        unique_together = (('parent_mineral', 'child_mineral'),)
 #
-#     class Meta:
-#         managed = False
-#         db_table = 'mineral_relationships'
-#         unique_together = (('parent_mineral_id', 'child_mineral_id'),)
 #
-#
-# class MineralTypes(models.Model):
-#     mineral_type_id = models.SmallIntegerField(primary_key=True)
-#     name = models.CharField(max_length=50)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'mineral_types'
-#
+class MineralTypes(models.Model):
+    mineral_type_id = models.SmallIntegerField(primary_key=True)
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        managed = False
+        db_table = 'mineral_types'
 
 
-#
-# class OxideMineralTypes(models.Model):
-#     oxide = models.ForeignKey('Oxides')
-#     mineral_type = models.ForeignKey(MineralTypes)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'oxide_mineral_types'
-#         unique_together = (('oxide_id', 'mineral_type_id'),)
-#
-#
-# class Oxides(models.Model):
-#     oxide_id = models.SmallIntegerField(primary_key=True)
-#     element = models.ForeignKey(Elements)
-#     oxidation_state = models.SmallIntegerField(blank=True, null=True)
-#     species = models.CharField(unique=True, max_length=20, blank=True, null=True)
-#     weight = models.FloatField(blank=True, null=True)
-#     cations_per_oxide = models.SmallIntegerField(blank=True, null=True)
-#     conversion_factor = models.FloatField()
-#     order_id = models.IntegerField(blank=True, null=True)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'oxides'
+
+class OxideMineralTypes(models.Model):
+    oxide = models.ForeignKey('Oxides')
+    mineral_type = models.ForeignKey(MineralTypes)
+
+    class Meta:
+        managed = False
+        db_table = 'oxide_mineral_types'
+        unique_together = (('oxide', 'mineral_type'),)
+
+
+class Oxides(models.Model):
+    oxide_id = models.SmallIntegerField(primary_key=True)
+    element = models.ForeignKey(Elements)
+    oxidation_state = models.SmallIntegerField(blank=True, null=True)
+    species = models.CharField(unique=True, max_length=20, blank=True, null=True)
+    weight = models.FloatField(blank=True, null=True)
+    cations_per_oxide = models.SmallIntegerField(blank=True, null=True)
+    conversion_factor = models.FloatField()
+    order_id = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'oxides'
 #
 #
 # class ProjectInvites(models.Model):

@@ -19,7 +19,7 @@ class Sample(models.Model):
     version = AutoIncVersionField()
     public_data = models.BooleanField(default=False)
     number = models.CharField(max_length=35)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='samples')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='samples')
     aliases = ArrayField(models.CharField(max_length=35, blank=True),
                          blank=True,
                          null=True)
@@ -83,7 +83,7 @@ class Subsample(models.Model):
     version = AutoIncVersionField()
     sample = models.ForeignKey(Sample)
     public_data = models.BooleanField(default=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     subsample_type = models.ForeignKey(SubsampleType)
 
     class Meta:
@@ -145,6 +145,29 @@ class SampleMineral(models.Model):
         db_table = 'sample_minerals'
 
 
+class MineralRelationship(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    parent_mineral = models.ForeignKey(Mineral, related_name='parent')
+    child_mineral = models.ForeignKey(Mineral, related_name='child')
+
+    class Meta:
+        db_table = 'mineral_relationships'
+        unique_together = (('parent_mineral', 'child_mineral'),)
+
+
+class MineralType(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=50)
+
+    elements = models.ManyToManyField('chemical_analyses.Element',
+                                      related_name='mineral_types')
+    oxides = models.ManyToManyField('chemical_analyses.Oxide',
+                                    related_name='mineral_types')
+
+    class Meta:
+        db_table = 'mineral_types'
+
+
 # Following are models for easy retrieval of sample-related free-text fields
 # from the database.
 #
@@ -188,3 +211,14 @@ class Collector(models.Model):
 
     class Meta:
         db_table = 'collectors'
+
+
+# A mapping table to help the migration of old samples to new samples; can
+# be gotten rid of once thi app goes into production.
+class SampleMapping(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    old_sample_id = models.IntegerField()
+    new_sample_id = models.UUIDField()
+
+    class Meta:
+        db_table = 'sample_mapping'

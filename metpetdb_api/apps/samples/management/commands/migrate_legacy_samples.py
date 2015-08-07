@@ -9,10 +9,12 @@ from apps.samples.models import (
     MetamorphicGrade,
     MetamorphicRegion,
     Mineral,
+    MineralRelationship,
     RockType,
     Region,
     Reference,
     Sample,
+    SampleMapping,
     SampleMineral,
     Subsample,
     SubsampleType,
@@ -22,6 +24,7 @@ from legacy.models import (
     MetamorphicGrades as LegacyMetamorphicGrade,
     MetamorphicRegions as LegacyMetamorphicRegion,
     Minerals as LegacyMineral,
+    MineralRelationships as LegacyMineralRelationship,
     RockType as LegacyRockType,
     SampleMetamorphicRegions as LegacySampleMetamorphicRegion,
     SampleMetamorphicGrades as LegacySampleMetamorphicGrades,
@@ -43,6 +46,7 @@ class Command(BaseCommand):
         self._migrate_metamorphic_grades()
         self._migrate_metamorphic_regions()
         self._migrate_minerals()
+        self._migrate_mineral_relationships()
         self._migrate_subsample_types()
         self._migrate_samples()
 
@@ -114,7 +118,7 @@ class Command(BaseCommand):
             new_sample = Sample.objects.create(
                 public_data=True if old_sample.public_data == 'Y' else False,
                 number=old_sample.number,
-                user=new_user,
+                owner=new_user,
                 aliases=aliases,
                 collection_date=old_sample.collection_date,
                 date_precision=old_sample.date_precision,
@@ -128,6 +132,9 @@ class Command(BaseCommand):
                 references=references,
                 collector_name=old_sample.collector
             )
+
+            SampleMapping.objects.create(old_sample_id=old_sample.pk,
+                                         new_sample_id=new_sample.pk)
 
             self._migrate_subsamples(old_sample, new_sample)
 
@@ -176,7 +183,7 @@ class Command(BaseCommand):
                 name=record.name,
                 sample=new_sample,
                 public_data=record.public_data,
-                user=new_user,
+                owner=new_user,
                 subsample_type=subsample_type
             )
 
@@ -242,9 +249,30 @@ class Command(BaseCommand):
         for record in old_records:
             Mineral.objects.create(name=record.name)
 
+        # chemical_analysis.large_rock actually corresponds to a mineral named
+        # 'Bulk Rock'
+        Mineral.objects.create(name='Bulk Rock')
+
         for record in old_records:
             mineral = Mineral.objects.get(name=record.name)
             mineral.real_mineral = (Mineral
                                     .objects
                                     .get(name=record.real_mineral.name))
             mineral.save()
+
+
+    @transaction.atomic
+    def _migrate_mineral_relationships(self):
+        print("Migrating mineral relationships...")
+        old_records = LegacyMineralRelationship.objects.all()
+        MineralRelationship.objects.all().delete()
+
+        for record in old_records:
+            MineralRelationship.objects.create(
+                parent_mineral=Mineral.objects.get(
+                    name=record.parent_mineral.name
+                ),
+                child_mineral=Mineral.objects.get(
+                    name=record.child_mineral.name
+                )
+            )

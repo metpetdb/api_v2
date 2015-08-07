@@ -40,14 +40,14 @@ class SampleViewSet(viewsets.ModelViewSet):
                 qs = qs.prefetch_related('metamorphic_regions')
             if 'minerals' in fields:
                 qs = qs.prefetch_related('samplemineral_set__mineral')
-            if 'user' in fields:
-                qs = qs.prefetch_related('user')
+            if 'owner' in fields:
+                qs = qs.prefetch_related('owner')
         except AttributeError:
             qs = qs.select_related('rock_type')
             qs = qs.prefetch_related('metamorphic_grades',
                                      'metamorphic_regions',
                                      'samplemineral_set__mineral',
-                                     'user')
+                                     'owner')
 
         qs = sample_query(params, qs)
 
