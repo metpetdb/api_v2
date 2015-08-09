@@ -82,7 +82,7 @@ class Subsample(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     version = AutoIncVersionField()
-    sample = models.ForeignKey(Sample)
+    sample = models.ForeignKey(Sample, related_name='subsamples')
     public_data = models.BooleanField(default=False)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     subsample_type = models.ForeignKey(SubsampleType)

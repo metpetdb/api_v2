@@ -21,7 +21,8 @@ class ChemicalAnalysis(models.Model):
     total = models.FloatField(blank=True, null=True)
     spot_id = models.BigIntegerField()
 
-    subsample = models.ForeignKey('samples.Subsample')
+    subsample = models.ForeignKey('samples.Subsample',
+                                  related_name='chemical_analyses')
     mineral = models.ForeignKey('samples.Mineral', blank=True, null=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
                              related_name='chemical_analyses')
