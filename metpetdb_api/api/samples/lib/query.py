@@ -61,8 +61,8 @@ def sample_query(params, qs):
 
     if params.get('public_data'):
         if params['public_data'] == 'True':
-            qs = qs.filter(public_date=True)
+            qs = qs.filter(public_data=True)
         elif params['public_data'] == 'False':
-            qs = qs.filter(public_date=False)
+            qs = qs.filter(public_data=False)
 
     return qs
