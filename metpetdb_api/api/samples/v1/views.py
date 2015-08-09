@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
+from api.lib.query import sample_qs_optimizer
 
 from api.samples.lib.query import sample_query
 from api.samples.v1.serializers import (
@@ -29,26 +30,7 @@ class SampleViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         params = request.QUERY_PARAMS
         qs = self.get_queryset().distinct()
-
-        try:
-            fields = params.get('fields').split(',')
-            if 'rock_types' in fields:
-                qs = qs.select_related('rock_type')
-            if 'metamorphic_grades' in fields:
-                qs = qs.prefetch_related('metamorphic_grades')
-            if 'metamorphic_regions' in fields:
-                qs = qs.prefetch_related('metamorphic_regions')
-            if 'minerals' in fields:
-                qs = qs.prefetch_related('samplemineral_set__mineral')
-            if 'owner' in fields:
-                qs = qs.prefetch_related('owner')
-        except AttributeError:
-            qs = qs.select_related('rock_type')
-            qs = qs.prefetch_related('metamorphic_grades',
-                                     'metamorphic_regions',
-                                     'samplemineral_set__mineral',
-                                     'owner')
-
+        qs = sample_qs_optimizer(params, qs)
         qs = sample_query(params, qs)
 
         page = self.paginate_queryset(qs)
