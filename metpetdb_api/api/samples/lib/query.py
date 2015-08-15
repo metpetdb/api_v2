@@ -4,14 +4,14 @@ from django.contrib.gis.geos import Polygon
 def sample_query(params, qs):
 
     if params.get('collectors'):
-        qs = qs.filter(collector__in=params['collectors'].split(','))
+        qs = qs.filter(collector_name__in=params['collectors'].split(','))
 
     if params.get('countries'):
         qs = qs.filter(country__in=params['countries'].split(','))
 
     if params.get('location_bbox'):
         bbox  = Polygon.from_bbox(params['location_bbox'].split(','))
-        qs = qs.filter(location__contained=bbox)
+        qs = qs.filter(location_coords__contained=bbox)
 
     if params.get('metamorphic_grades'):
         metamorphic_grades = params['metamorphic_grades'].split(',')
