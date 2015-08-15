@@ -20,7 +20,11 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 from rest_framework import routers
-from api.chemical_analyses.v1.views import ChemicalAnalysisViewSet
+from api.chemical_analyses.v1.views import (
+    ChemicalAnalysisViewSet,
+    ElementViewSet,
+    OxideViewSet,
+)
 from api.samples.v1.views import (
     SampleViewSet,
     MineralViewSet,
@@ -29,14 +33,21 @@ from api.samples.v1.views import (
     ReferenceViewSet,
     CollectorViewSet,
     SubsampleViewSet,
+    MetamorphicRegionViewSet,
+    MetamorphicGradeViewSet,
 )
 from api.users.v1.views import UserViewSet
 
 router = routers.DefaultRouter()
+router.register(r'users', UserViewSet)
 router.register(r'samples', SampleViewSet)
 router.register(r'subsamples', SubsampleViewSet)
 router.register(r'chemical_analyses', ChemicalAnalysisViewSet)
+router.register(r'metamorphic_regions', MetamorphicRegionViewSet)
+router.register(r'metamorphic_grades', MetamorphicGradeViewSet)
 router.register(r'minerals', MineralViewSet)
+router.register(r'elements', ElementViewSet)
+router.register(r'oxides', OxideViewSet)
 router.register(r'rock_types', RockTypeViewSet)
 router.register(r'regions', RegionViewSet)
 router.register(r'references', ReferenceViewSet)

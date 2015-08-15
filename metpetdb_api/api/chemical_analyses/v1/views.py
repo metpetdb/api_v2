@@ -2,11 +2,15 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from api.chemical_analyses.lib.query import chemical_analysis_query
-from api.chemical_analyses.v1.serializers import ChemicalAnalysisSerializer
+from api.chemical_analyses.v1.serializers import (
+    ChemicalAnalysisSerializer,
+    ElementSerializer,
+    OxideSerializer,
+)
 from api.lib.query import sample_qs_optimizer
 from api.samples.lib.query import sample_query
 
-from apps.chemical_analyses.models import ChemicalAnalysis
+from apps.chemical_analyses.models import ChemicalAnalysis, Element, Oxide
 from apps.samples.models import Sample
 
 
@@ -54,3 +58,13 @@ class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
+
+
+class ElementViewSet(viewsets.ModelViewSet):
+    queryset = Element.objects.all()
+    serializer_class = ElementSerializer
+
+
+class OxideViewSet(viewsets.ModelViewSet):
+    queryset = Oxide.objects.all()
+    serializer_class = OxideSerializer

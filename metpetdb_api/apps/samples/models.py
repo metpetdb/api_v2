@@ -36,7 +36,7 @@ class Sample(models.Model):
     minerals = models.ManyToManyField('Mineral', through='SampleMineral',
                                       related_name='samples')
 
-    # Free-text field. Ugh. Stored as an ArrayField to avoid joining to the
+    # Free-text field. Ugh. Stored as an CharField to avoid joining to the
     # country table every time we retrieve sample(s).
     country = models.CharField(max_length=100, blank=True, null=True)
 

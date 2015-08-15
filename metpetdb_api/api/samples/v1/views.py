@@ -11,6 +11,8 @@ from api.samples.v1.serializers import (
     ReferenceSerializer,
     CollectorSerializer,
     SubsampleSerializer,
+    MetamorphicRegionSerializer,
+    MetamorphicGradeSerializer,
 )
 from apps.samples.models import (
     Sample,
@@ -20,6 +22,8 @@ from apps.samples.models import (
     Reference,
     Collector,
     Subsample,
+    MetamorphicRegion,
+    MetamorphicGrade,
 )
 
 
@@ -70,3 +74,13 @@ class ReferenceViewSet(viewsets.ModelViewSet):
 class CollectorViewSet(viewsets.ModelViewSet):
     queryset = Collector.objects.all()
     serializer_class = CollectorSerializer
+
+
+class MetamorphicRegionViewSet(viewsets.ModelViewSet):
+    queryset = MetamorphicRegion.objects.all()
+    serializer_class = MetamorphicRegionSerializer
+
+
+class MetamorphicGradeViewSet(viewsets.ModelViewSet):
+    queryset = MetamorphicGrade.objects.all()
+    serializer_class = MetamorphicGradeSerializer

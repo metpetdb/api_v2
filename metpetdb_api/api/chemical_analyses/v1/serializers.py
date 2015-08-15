@@ -1,12 +1,14 @@
 from rest_framework import serializers
 
 from api.lib.serializers import DynamicFieldsModelSerializer
-from api.samples.v1.serializers import SubsampleSerializer, MineralSerializer
+from api.samples.v1.serializers import MineralSerializer
 from api.users.v1.serializers import UserSerializer
 from apps.chemical_analyses.models import (
     ChemicalAnalysis,
     ChemicalAnalysisElement,
     ChemicalAnalysisOxide,
+    Element,
+    Oxide,
 )
 
 
@@ -60,3 +62,13 @@ class ChemicalAnalysisSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = ChemicalAnalysis
         depth = 1
+
+
+class ElementSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = Element
+
+
+class OxideSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = Oxide

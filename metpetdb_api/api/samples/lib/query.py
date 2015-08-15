@@ -6,6 +6,9 @@ def sample_query(params, qs):
     if params.get('collectors'):
         qs = qs.filter(collector_name__in=params['collectors'].split(','))
 
+    if params.get('numbers'):
+        qs = qs.filter(number__in=params['numbers'].split(','))
+
     if params.get('countries'):
         qs = qs.filter(country__in=params['countries'].split(','))
 
