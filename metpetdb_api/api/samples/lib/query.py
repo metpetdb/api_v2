@@ -26,7 +26,7 @@ def sample_query(params, qs):
 
     if params.get('minerals'):
         minerals = params['minerals'].split(',')
-        if params.get('minerals_and'):
+        if params.get('minerals_and') == 'True':
             for mineral in minerals:
                 qs = qs.extra(where=["""
                         EXISTS (

@@ -4,7 +4,7 @@ def chemical_analysis_query(params, qs):
 
     if params.get('elements'):
         elements = params['elements'].split(',')
-        if params.get('elements_and'):
+        if params.get('elements_and') == 'True':
             for element in elements:
                 qs = qs.extra(where=["""
                         EXISTS (
@@ -21,7 +21,7 @@ def chemical_analysis_query(params, qs):
 
     if params.get('oxides'):
         oxides = params['oxides'].split(',')
-        if params.get('oxides_and'):
+        if params.get('oxides_and') == 'True':
             for oxide in oxides:
                 qs = qs.extra(where=["""
                         EXISTS (
