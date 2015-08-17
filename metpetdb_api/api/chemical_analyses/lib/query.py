@@ -1,6 +1,6 @@
 def chemical_analysis_query(params, qs):
     if params.get('minerals'):
-        qs = qs.filter(minerals__name__in=params['minerals'].split(','))
+        qs = qs.filter(mineral__name__in=params['minerals'].split(','))
 
     if params.get('elements'):
         elements = params['elements'].split(',')
