@@ -18,3 +18,22 @@ def sample_qs_optimizer(params, qs):
                                  'samplemineral_set__mineral',
                                  'owner')
     return qs
+
+
+def chemical_analyses_qs_optimizer(params, qs):
+    try:
+        fields = params.get('fields').split(',')
+
+        for field in ('mineral', 'owner', 'subsample'):
+            if field in fields:
+                qs = qs.select_related(field)
+
+        if 'elements' in fields:
+            qs = qs.prefetch_related('chemicalanalysiselement_set__element')
+        if 'oxides' in fields:
+            qs = qs.prefetch_related('chemicalanalysisoxide_set__oxide')
+    except AttributeError:
+        qs = qs.select_related('mineral', 'owner', 'subsample')
+        qs = qs.prefetch_related('chemicalanalysiselement_set__element',
+                                 'chemicalanalysisoxide_set__oxide')
+    return qs

@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
-from api.lib.query import sample_qs_optimizer
+from api.chemical_analyses.lib.query import chemical_analysis_query
+from api.lib.query import sample_qs_optimizer, chemical_analyses_qs_optimizer
 
 from api.samples.lib.query import sample_query
 from api.samples.v1.serializers import (
@@ -14,6 +15,7 @@ from api.samples.v1.serializers import (
     MetamorphicRegionSerializer,
     MetamorphicGradeSerializer,
 )
+from apps.chemical_analyses.models import ChemicalAnalysis
 from apps.samples.models import (
     Sample,
     RockType,
@@ -33,9 +35,20 @@ class SampleViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         params = request.QUERY_PARAMS
-        qs = self.get_queryset().distinct()
+
+        if params.get('chemical_analyses_filters') == 'True':
+            chem_qs = ChemicalAnalysis.objects.all()
+            chem_qs = chemical_analyses_qs_optimizer(params, chem_qs)
+            chem_ids = (chemical_analysis_query(params, chem_qs)
+                        .values_list('id'))
+            qs = (Sample
+                  .objects
+                  .filter(subsamples__chemical_analyses__id__in=chem_ids))
+        else:
+            qs = self.get_queryset().distinct()
+            qs = sample_query(params, qs)
+
         qs = sample_qs_optimizer(params, qs)
-        qs = sample_query(params, qs)
 
         page = self.paginate_queryset(qs)
         if page is not None:

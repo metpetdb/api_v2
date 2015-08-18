@@ -7,7 +7,7 @@ from api.chemical_analyses.v1.serializers import (
     ElementSerializer,
     OxideSerializer,
 )
-from api.lib.query import sample_qs_optimizer
+from api.lib.query import sample_qs_optimizer, chemical_analyses_qs_optimizer
 from api.samples.lib.query import sample_query
 
 from apps.chemical_analyses.models import ChemicalAnalysis, Element, Oxide
@@ -17,24 +17,6 @@ from apps.samples.models import Sample
 class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
     queryset = ChemicalAnalysis.objects.all()
     serializer_class = ChemicalAnalysisSerializer
-
-    def _optimize_qs(self, params, qs):
-        try:
-            fields = params.get('fields').split(',')
-
-            for field in ('mineral', 'owner', 'subsample'):
-                if field in fields:
-                    qs = qs.select_related(field)
-
-            if 'elements' in fields:
-                qs = qs.prefetch_related('chemicalanalysiselement_set__element')
-            if 'oxides' in fields:
-                qs = qs.prefetch_related('chemicalanalysisoxide_set__oxide')
-        except AttributeError:
-            qs = qs.select_related('mineral', 'owner', 'subsample')
-            qs = qs.prefetch_related('chemicalanalysiselement_set__element',
-                                     'chemicalanalysisoxide_set__oxide')
-        return qs
 
     def list(self, request, *args, **kwargs):
         params = request.QUERY_PARAMS
@@ -49,7 +31,7 @@ class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
             qs = self.get_queryset().distinct()
             qs = chemical_analysis_query(params, qs)
 
-        qs = self._optimize_qs(params, qs)
+        qs = chemical_analyses_qs_optimizer(params, qs)
 
         page = self.paginate_queryset(qs)
         if page is not None:
