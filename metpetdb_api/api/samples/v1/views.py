@@ -33,6 +33,11 @@ class SampleViewSet(viewsets.ModelViewSet):
     queryset = Sample.objects.all()
     serializer_class = SampleSerializer
 
+    def get_serializer(self, *args, **kwargs):
+        if self.request.method == 'PUT':
+            kwargs['partial'] = True
+        return super().get_serializer(*args, **kwargs)
+
     def list(self, request, *args, **kwargs):
         params = request.QUERY_PARAMS
 
