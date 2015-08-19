@@ -46,7 +46,6 @@ INSTALLED_APPS = (
     'rest_framework',
     'django_extensions',
     'debug_toolbar',
-    'django_filters',
     'legacy',
     'api',
     'apps',
