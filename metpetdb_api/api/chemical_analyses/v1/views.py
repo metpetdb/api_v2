@@ -19,7 +19,7 @@ class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
     serializer_class = ChemicalAnalysisSerializer
 
     def list(self, request, *args, **kwargs):
-        params = request.QUERY_PARAMS
+        params = request.query_params
 
         if params.get('sample_filters') == 'True':
             sample_qs = Sample.objects.all()

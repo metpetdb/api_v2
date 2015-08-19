@@ -39,7 +39,7 @@ class SampleViewSet(viewsets.ModelViewSet):
         return super().get_serializer(*args, **kwargs)
 
     def list(self, request, *args, **kwargs):
-        params = request.QUERY_PARAMS
+        params = request.query_params
 
         if params.get('chemical_analyses_filters') == 'True':
             chem_qs = ChemicalAnalysis.objects.all()
