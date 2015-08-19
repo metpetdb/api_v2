@@ -17,6 +17,10 @@ from apps.samples.models import (
     Subsample,
 )
 
+SAMPLE_FIELDS = ('number', 'aliases', 'collection_date', 'description',
+                 'location_name', 'location_coords', 'location_error',
+                 'date_precision', 'country', 'regions', 'references',
+                 'collector_name', 'collector_id', 'sesar_number',)
 
 class RockTypeSerializer(DynamicFieldsModelSerializer):
     class Meta:
@@ -52,6 +56,14 @@ class SampleSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Sample
         depth = 1
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            if attr in SAMPLE_FIELDS:
+                setattr(instance, attr, value)
+        instance.save()
+
+        return instance
 
     def get_subsample_ids(self, obj):
         return Subsample.objects.filter(sample_id=obj.pk).values_list('id',
