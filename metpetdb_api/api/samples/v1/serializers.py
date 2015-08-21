@@ -44,7 +44,6 @@ class SampleMineralSerializer(DynamicFieldsModelSerializer):
 
 
 class SampleSerializer(DynamicFieldsModelSerializer):
-    rock_types = RockTypeSerializer(many=True, required=False)
     minerals = SampleMineralSerializer(source='samplemineral_set',
                                        many=True)
     owner = UserSerializer()
