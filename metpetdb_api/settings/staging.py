@@ -114,7 +114,6 @@ DATABASES = {
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
     'PAGE_SIZE': 20,
     # Allow client to override, using `?page_size=xxx`.
     'PAGINATE_BY_PARAM': 'page_size',
