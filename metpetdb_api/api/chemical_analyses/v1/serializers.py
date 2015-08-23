@@ -10,7 +10,8 @@ from apps.chemical_analyses.models import (
     Element,
     Oxide,
 )
-
+from apps.samples.models import Subsample, Mineral
+from apps.users.models import User
 
 CHEMICAL_ANALYSIS_FIELDS = ('reference_x', 'reference_y', 'stage_x',
                             'analysis_method', 'where_done', 'analyst',
@@ -60,14 +61,51 @@ class ChemicalAnalysisSerializer(DynamicFieldsModelSerializer):
     owner = UserSerializer(read_only=True)
     elements = ChemicalAnalysisElementSerializer(
         many=True,
-        source='chemicalanalysiselement_set')
+        source='chemicalanalysiselement_set',
+        required=False,
+    )
     oxides = ChemicalAnalysisOxideSerializer(
         many=True,
-        source='chemicalanalysisoxide_set')
+        source='chemicalanalysisoxide_set',
+        required=False
+    )
 
     class Meta:
         model = ChemicalAnalysis
         depth = 1
+
+    def is_valid(self, raise_exception=False):
+        super().is_valid(raise_exception)
+
+        if self.initial_data.get('owner'):
+            self._validated_data.update(
+                {'owner': User.objects.get(pk=self.initial_data['owner'])})
+
+        if self.initial_data.get('subsample_id'):
+            self._validated_data.update(
+                {'subsample': (Subsample
+                               .objects
+                               .get(pk=self.initial_data['subsample_id']))
+                 })
+
+        if self.initial_data.get('mineral_id'):
+            self._validated_data.update(
+                {'mineral': (Mineral
+                             .objects
+                             .get(pk=self.initial_data['mineral_id']))
+                 })
+
+        return not bool(self._errors)
+
+    def create(self, validated_data):
+        if validated_data.get('chemicalanalysiselement_set'):
+            del validated_data['chemicalanalysiselement_set']
+
+        if validated_data.get('chemicalanalysisoxide_set'):
+            del validated_data['chemicalanalysisoxide_set']
+
+        instance = super().create(validated_data)
+        return instance
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():

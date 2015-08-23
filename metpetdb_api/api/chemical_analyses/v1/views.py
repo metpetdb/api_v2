@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 
 from api.chemical_analyses.lib.query import chemical_analysis_query
@@ -123,6 +123,47 @@ class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
                 min_amount=record['min_amount'],
                 max_amount=record['max_amount']
             )
+
+
+    def perform_create(self, serializer):
+        return serializer.save()
+
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = self.perform_create(serializer)
+
+        if request.data.get('elements'):
+            for record in request.data.get('elements'):
+                ChemicalAnalysisElement.objects.create(
+                    chemical_analysis=instance,
+                    element=Element.objects.get(pk=record['id']),
+                    amount = record['amount'],
+                    precision = record['precision'],
+                    precision_type = record['precision_type'],
+                    measurement_unit = record['measurement_unit'],
+                    min_amount = record['min_amount'],
+                    max_amount = record['max_amount'],
+                )
+
+        if request.data.get('oxides'):
+            for record in request.data.get('oxides'):
+                ChemicalAnalysisOxide.objects.create(
+                    chemical_analysis=instance,
+                    oxide=Oxide.objects.get(pk=record['id']),
+                    amount = record['amount'],
+                    precision = record['precision'],
+                    precision_type = record['precision_type'],
+                    measurement_unit = record['measurement_unit'],
+                    min_amount = record['min_amount'],
+                    max_amount = record['max_amount'],
+                )
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data,
+                        status=status.HTTP_201_CREATED,
+                        headers=headers)
 
 
     def update(self, request, *args, **kwargs):
