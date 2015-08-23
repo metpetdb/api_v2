@@ -12,6 +12,12 @@ from apps.chemical_analyses.models import (
 )
 
 
+CHEMICAL_ANALYSIS_FIELDS = ('reference_x', 'reference_y', 'stage_x',
+                            'analysis_method', 'where_done', 'analyst',
+                            'analysis_date', 'date_precision',
+                            'description', 'total', 'spot_id', 'reference')
+
+
 class ChemicalAnalysisElementSerializer(DynamicFieldsModelSerializer):
     id = serializers.ReadOnlyField(source='element.id')
     name = serializers.ReadOnlyField(source='element.name')
@@ -62,6 +68,14 @@ class ChemicalAnalysisSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = ChemicalAnalysis
         depth = 1
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            if attr in CHEMICAL_ANALYSIS_FIELDS:
+                setattr(instance, attr, value)
+        instance.save()
+
+        return instance
 
 
 class ElementSerializer(DynamicFieldsModelSerializer):

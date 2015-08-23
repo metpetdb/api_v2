@@ -127,6 +127,7 @@ class SampleViewSet(viewsets.ModelViewSet):
                                              mineral=record['mineral'],
                                              amount=record['amount'])
 
+        instance.save()
         # refresh the data before returning a response
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
