@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 from api.chemical_analyses.lib.query import chemical_analysis_query
 from api.lib.query import sample_qs_optimizer, chemical_analyses_qs_optimizer
@@ -39,6 +39,7 @@ class SampleViewSet(viewsets.ModelViewSet):
             kwargs['partial'] = True
         return super().get_serializer(*args, **kwargs)
 
+
     def list(self, request, *args, **kwargs):
         params = request.query_params
 
@@ -64,6 +65,82 @@ class SampleViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
+
+    def _handle_metamorphic_regions(self, instance, ids):
+        metamorphic_regions = []
+        for id in ids:
+            try:
+                metamorphic_region = MetamorphicRegion.objects.get(pk=id)
+            except:
+                return Response(
+                    data={'error': 'Invalid metamorphic_region id'},
+                    status=400)
+            else:
+                metamorphic_regions.append(metamorphic_region)
+        instance.metamorphic_regions = metamorphic_regions
+
+
+    def _handle_metamorphic_grades(self, instance, ids):
+        metamorphic_grades = []
+        for id in ids:
+            try:
+                metamorphic_grade = MetamorphicGrade.objects.get(pk=id)
+            except:
+                return Response(
+                    data={'error': 'Invalid metamorphic_grade id'},
+                    status=400)
+            else:
+                metamorphic_grades.append(metamorphic_grade)
+        instance.metamorphic_grades = metamorphic_grades
+
+
+    def _handle_minerals(self, instance, minerals):
+        to_add = []
+        for record in minerals:
+            try:
+                to_add.append(
+                    {'mineral': Mineral.objects.get(pk=record['id']),
+                     'amount': record['amount']})
+            except Mineral.DoesNotExist:
+                return Response(
+                    data={'error': 'Invalid mineral id'},
+                    status=400)
+
+        SampleMineral.objects.filter(sample=instance).delete()
+        for record in to_add:
+            SampleMineral.objects.create(sample=instance,
+                                         mineral=record['mineral'],
+                                         amount=record['amount'])
+
+
+    def perform_create(self, serializer):
+        return serializer.save()
+
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = self.perform_create(serializer)
+
+        metamorphic_region_ids = request.data.get('metamorphic_region_ids')
+        metamorphic_grade_ids = request.data.get('metamorphic_grade_ids')
+        minerals = request.data.get('minerals')
+
+        if metamorphic_region_ids:
+            self._handle_metamorphic_regions(instance, metamorphic_region_ids)
+
+        if metamorphic_grade_ids:
+            self._handle_metamorphic_grades(instance, metamorphic_grade_ids)
+
+        if minerals:
+            self._handle_minerals(instance, minerals)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data,
+                        status=status.HTTP_201_CREATED,
+                        headers=headers)
+
+
     def update(self, request, *args, **kwargs):
         params = request.data
         partial = kwargs.pop('partial', False)
@@ -84,48 +161,19 @@ class SampleViewSet(viewsets.ModelViewSet):
                 instance.rock_type = rock_type
 
         if 'metamorphic_region_ids' in params:
-            metamorphic_regions = []
-            for id in params['metamorphic_region_ids'].split(','):
-                try:
-                    metamorphic_region = MetamorphicRegion.objects.get(pk=id)
-                except:
-                    return Response(
-                        data={'error': 'Invalid metamorphic_region id'},
-                        status=400)
-                else:
-                    metamorphic_regions.append(metamorphic_region)
-            instance.metamorphic_regions = metamorphic_regions
+            self._handle_metamorphic_regions(
+                instance,
+                params['metamorphic_region_ids'].split(',')
+            )
 
         if 'metamorphic_grade_ids' in params:
-            metamorphic_grades = []
-            for id in params['metamorphic_grade_ids'].split(','):
-                try:
-                    metamorphic_grade = MetamorphicGrade.objects.get(pk=id)
-                except:
-                    return Response(
-                        data={'error': 'Invalid metamorphic_grade id'},
-                        status=400)
-                else:
-                    metamorphic_grades.append(metamorphic_grade)
-            instance.metamorphic_grades = metamorphic_grades
+            self._handle_metamorphic_grades(
+                instance,
+                params['metamorphic_grade_ids'].split(',')
+            )
 
         if 'minerals' in params:
-            to_add = []
-            for record in params['minerals']:
-                try:
-                    to_add.append(
-                        {'mineral': Mineral.objects.get(pk=record['id']),
-                         'amount': record['amount']})
-                except Mineral.DoesNotExist:
-                    return Response(
-                        data={'error': 'Invalid mineral id'},
-                        status=400)
-
-            SampleMineral.objects.filter(sample=instance).delete()
-            for record in to_add:
-                SampleMineral.objects.create(sample=instance,
-                                             mineral=record['mineral'],
-                                             amount=record['amount'])
+            self._handle_minerals(instance, params['minerals'])
 
         instance.save()
         # refresh the data before returning a response

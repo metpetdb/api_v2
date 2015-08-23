@@ -16,6 +16,7 @@ from apps.samples.models import (
     Collector,
     Subsample,
 )
+from apps.users.models import User
 
 SAMPLE_FIELDS = ('number', 'aliases', 'collection_date', 'description',
                  'location_name', 'location_coords', 'location_error',
@@ -46,7 +47,7 @@ class SampleMineralSerializer(DynamicFieldsModelSerializer):
 class SampleSerializer(DynamicFieldsModelSerializer):
     minerals = SampleMineralSerializer(source='samplemineral_set',
                                        many=True)
-    owner = UserSerializer()
+    owner = UserSerializer(read_only=True)
 
     # TODO: figure out if there is a better, more efficient way to do this
     subsample_ids = serializers.SerializerMethodField()
@@ -55,6 +56,32 @@ class SampleSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Sample
         depth = 1
+
+    def is_valid(self, raise_exception=False):
+        super().is_valid(raise_exception)
+
+        if self.initial_data.get('owner'):
+            self._validated_data.update(
+                {'owner': User.objects.get(pk=self.initial_data['owner'])})
+
+        if self.initial_data.get('rock_type_id'):
+            self._validated_data.update(
+                {'rock_type': (RockType
+                               .objects
+                               .get(pk=self.initial_data['rock_type_id']))
+                 }
+            )
+
+        return not bool(self._errors)
+
+    def create(self, validated_data):
+        if validated_data.get('samplemineral_set'):
+            del validated_data['samplemineral_set']
+
+        print(validated_data)
+        instance = super().create(validated_data)
+        return instance
+
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
