@@ -1,6 +1,7 @@
-from rest_framework import status, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from api.chemical_analyses.lib.query import chemical_analysis_query
+from api.lib.permissions import IsOwnerOrReadOnly, IsSuperuserOrReadOnly
 from api.lib.query import sample_qs_optimizer, chemical_analyses_qs_optimizer
 
 from api.samples.lib.query import sample_query
@@ -33,6 +34,8 @@ from apps.samples.models import (
 class SampleViewSet(viewsets.ModelViewSet):
     queryset = Sample.objects.all()
     serializer_class = SampleSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsOwnerOrReadOnly,)
 
     def get_serializer(self, *args, **kwargs):
         if self.request.method == 'PUT':
@@ -184,16 +187,22 @@ class SampleViewSet(viewsets.ModelViewSet):
 class SubsampleViewSet(viewsets.ModelViewSet):
     queryset = Subsample.objects.all()
     serializer_class = SubsampleSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsOwnerOrReadOnly,)
 
 
 class RockTypeViewSet(viewsets.ModelViewSet):
     queryset = RockType.objects.all()
     serializer_class = RockTypeSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsSuperuserOrReadOnly,)
 
 
 class MineralViewSet(viewsets.ModelViewSet):
     queryset = Mineral.objects.all()
     serializer_class = MineralSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsSuperuserOrReadOnly,)
 
 
 class RegionViewSet(viewsets.ModelViewSet):
@@ -214,8 +223,12 @@ class CollectorViewSet(viewsets.ModelViewSet):
 class MetamorphicRegionViewSet(viewsets.ModelViewSet):
     queryset = MetamorphicRegion.objects.all()
     serializer_class = MetamorphicRegionSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsSuperuserOrReadOnly,)
 
 
 class MetamorphicGradeViewSet(viewsets.ModelViewSet):
     queryset = MetamorphicGrade.objects.all()
     serializer_class = MetamorphicGradeSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsSuperuserOrReadOnly,)
