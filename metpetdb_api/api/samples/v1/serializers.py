@@ -102,9 +102,10 @@ class SampleSerializer(DynamicFieldsModelSerializer):
 
 
 class SubsampleSerializer(DynamicFieldsModelSerializer):
-    sample = SampleSerializer(read_only=True)
+    # sample = SampleSerializer(read_only=True)
     class Meta:
         model = Subsample
+        depth = 1
 
 
 class MetamorphicGradeSerializer(DynamicFieldsModelSerializer):

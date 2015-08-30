@@ -20,6 +20,9 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 from rest_framework import routers
+from rest_framework.authtoken import views
+
+
 from api.chemical_analyses.v1.views import (
     ChemicalAnalysisViewSet,
     ElementViewSet,
@@ -56,4 +59,5 @@ router.register(r'collectors', CollectorViewSet)
 urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^auth/', include('djoser.urls.authtoken')),
 ]

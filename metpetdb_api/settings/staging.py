@@ -44,7 +44,9 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'django_extensions',
+    'vendor.djoser.djoser',
     'legacy',
     'api',
     'apps',
@@ -114,11 +116,14 @@ DATABASES = {
 }
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
     'PAGE_SIZE': 20,
     # Allow client to override, using `?page_size=xxx`.
     'PAGINATE_BY_PARAM': 'page_size',
     # Maximum limit allowed when using `?page_size=xxx`.
-    'MAX_PAGINATE_BY': 2000
+    'MAX_PAGINATE_BY': 2000,
 }
 
 LOGGING = {
