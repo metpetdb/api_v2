@@ -20,8 +20,8 @@ from apps.users.models import User
 
 SAMPLE_FIELDS = ('number', 'aliases', 'collection_date', 'description',
                  'location_name', 'location_coords', 'location_error',
-                 'date_precision', 'country', 'regions', 'references',
-                 'collector_name', 'collector_id', 'sesar_number',)
+                 'date_precision', 'country', 'regions', 'collector_name',
+                 'collector_id', 'sesar_number',)
 
 class RockTypeSerializer(DynamicFieldsModelSerializer):
     class Meta:

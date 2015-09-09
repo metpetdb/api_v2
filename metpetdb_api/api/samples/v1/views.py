@@ -28,6 +28,7 @@ from apps.samples.models import (
     MetamorphicRegion,
     MetamorphicGrade,
     SampleMineral,
+    GeoReference,
 )
 
 
@@ -116,6 +117,29 @@ class SampleViewSet(viewsets.ModelViewSet):
                                          amount=record['amount'])
 
 
+    def _handle_references(self, instance, references):
+        to_add = []
+
+        georefences = GeoReference.objects.filter(name__in=references)
+        to_add.extend(georefences)
+
+        missing_georefs = (set(references) -
+                           set([georef.name for georef in georefences]))
+        if missing_georefs:
+            new_georefs = GeoReference.objects.bulk_create(
+                [GeoReference(name=name) for name in missing_georefs]
+            )
+            Reference.objects.bulk_create([Reference(name=name)
+                                           for name in missing_georefs])
+            to_add.extend(new_georefs)
+
+        # FIXME: this is lazy; we should ideally clear only those
+        # associations that aren't needed anymore and create new
+        # associations, if required.
+        instance.references.clear()
+        instance.references.add(*to_add)
+
+
     def perform_create(self, serializer):
         return serializer.save()
 
@@ -128,6 +152,7 @@ class SampleViewSet(viewsets.ModelViewSet):
         metamorphic_region_ids = request.data.get('metamorphic_region_ids')
         metamorphic_grade_ids = request.data.get('metamorphic_grade_ids')
         minerals = request.data.get('minerals')
+        references = request.data.get('references')
 
         if metamorphic_region_ids:
             self._handle_metamorphic_regions(instance, metamorphic_region_ids)
@@ -137,6 +162,9 @@ class SampleViewSet(viewsets.ModelViewSet):
 
         if minerals:
             self._handle_minerals(instance, minerals)
+
+        if references:
+            self._handle_references(instance, references)
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data,
@@ -177,6 +205,9 @@ class SampleViewSet(viewsets.ModelViewSet):
 
         if 'minerals' in params:
             self._handle_minerals(instance, params['minerals'])
+
+        if 'references' in params:
+            self._handle_references(instance, params['references'])
 
         instance.save()
         # refresh the data before returning a response
@@ -230,5 +261,12 @@ class MetamorphicRegionViewSet(viewsets.ModelViewSet):
 class MetamorphicGradeViewSet(viewsets.ModelViewSet):
     queryset = MetamorphicGrade.objects.all()
     serializer_class = MetamorphicGradeSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsSuperuserOrReadOnly,)
+
+
+class GeoReferenceViewSet(viewsets.ModelViewSet):
+    queryset = MetamorphicRegion.objects.all()
+    serializer_class = MetamorphicRegionSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsSuperuserOrReadOnly,)
