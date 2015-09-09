@@ -38,6 +38,7 @@ from api.samples.v1.views import (
     SubsampleViewSet,
     MetamorphicRegionViewSet,
     MetamorphicGradeViewSet,
+    GeoReferenceViewSet,
 )
 from api.users.v1.views import UserViewSet
 
@@ -51,6 +52,7 @@ router.register(r'metamorphic_grades', MetamorphicGradeViewSet)
 router.register(r'minerals', MineralViewSet)
 router.register(r'elements', ElementViewSet)
 router.register(r'oxides', OxideViewSet)
+router.register(r'georeferences', GeoReferenceViewSet)
 router.register(r'rock_types', RockTypeViewSet)
 router.register(r'regions', RegionViewSet)
 router.register(r'references', ReferenceViewSet)

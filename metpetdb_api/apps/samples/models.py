@@ -35,6 +35,7 @@ class Sample(models.Model):
     metamorphic_grades = models.ManyToManyField('MetamorphicGrade')
     minerals = models.ManyToManyField('Mineral', through='SampleMineral',
                                       related_name='samples')
+    references = models.ManyToManyField('GeoReference', related_name='samples')
 
     # Free-text field. Ugh. Stored as an CharField to avoid joining to the
     # country table every time we retrieve sample(s).
@@ -45,13 +46,6 @@ class Sample(models.Model):
     regions = ArrayField(models.CharField(max_length=100, blank=True),
                          blank=True,
                          null=True)
-
-    # Free-text field; stored as an ArrayField to avoid joining to the
-    # reference table every time we retrieve sample(s)
-    references = ArrayField(models.CharField(max_length=100, blank=True),
-                            blank=True,
-                            null=True)
-
 
     # Free text field with no validation;
     collector_name = models.CharField(max_length=50, blank=True, null=True)
@@ -167,6 +161,22 @@ class MineralType(models.Model):
 
     class Meta:
         db_table = 'mineral_types'
+
+
+class GeoReference(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.TextField(unique=True)
+    title = models.TextField(blank=True, null=True)
+    first_author = models.TextField(blank=True, null=True)
+    second_authors = models.TextField(blank=True, null=True)
+    journal_name = models.TextField(blank=True, null=True)
+    full_text = models.TextField(blank=True, null=True)
+    journal_name_2 = models.TextField(blank=True, null=True)
+    doi = models.TextField(blank=True, null=True)
+    publication_year = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'georeferences'
 
 
 # Following are models for easy retrieval of sample-related free-text fields

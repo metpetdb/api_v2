@@ -5,6 +5,7 @@ from django.db import transaction
 from apps.common.utils import queryset_iterator
 from apps.samples.models import (
     Collector,
+    GeoReference,
     Grid,
     MetamorphicGrade,
     MetamorphicRegion,
@@ -20,11 +21,13 @@ from apps.samples.models import (
     SubsampleType,
 )
 from legacy.models import (
+    Georeference as LegacyGeoreference,
     Grids as LegacyGrid,
     MetamorphicGrades as LegacyMetamorphicGrade,
     MetamorphicRegions as LegacyMetamorphicRegion,
     Minerals as LegacyMineral,
     MineralRelationships as LegacyMineralRelationship,
+    Reference as LegacyReference,
     RockType as LegacyRockType,
     SampleMetamorphicRegions as LegacySampleMetamorphicRegion,
     SampleMetamorphicGrades as LegacySampleMetamorphicGrades,
@@ -48,7 +51,9 @@ class Command(BaseCommand):
         self._migrate_minerals()
         self._migrate_mineral_relationships()
         self._migrate_subsample_types()
+        self._migrate_references()
         self._migrate_samples()
+
 
     @transaction.atomic
     def _migrate_samples(self):
@@ -57,7 +62,6 @@ class Command(BaseCommand):
 
         all_collectors = []
         all_regions = []
-        all_references = []
 
         old_samples = queryset_iterator(LegacySample.objects.all(),
                                         chunksize=1000)
@@ -87,8 +91,7 @@ class Command(BaseCommand):
                           for lsr in LegacySampleReference
                                      .objects
                                      .filter(sample=old_sample)]
-            if references:
-                all_references.extend(references)
+            new_georeferences = GeoReference.objects.filter(name__in=references)
 
             old_metamorphic_regions = (lsa.metamorphic_region.name
                                        for lsa in
@@ -129,7 +132,6 @@ class Command(BaseCommand):
                 location_error=old_sample.location_error,
                 rock_type=rock_type,
                 regions=regions,
-                references=references,
                 collector_name=old_sample.collector
             )
 
@@ -140,6 +142,7 @@ class Command(BaseCommand):
 
             new_sample.metamorphic_regions.add(*new_metamorphic_regions)
             new_sample.metamorphic_grades.add(*new_metamorphic_grades)
+            new_sample.references.add(*new_georeferences)
 
             old_minerals = (LegacySampleMineral
                             .objects
@@ -161,13 +164,35 @@ class Command(BaseCommand):
         Region.objects.bulk_create([Region(name=region)
                                     for region in set(all_regions)])
 
-        Reference.objects.all().delete()
-        Reference.objects.bulk_create([Reference(name=reference)
-                                       for reference in set(all_references)])
-
         Collector.objects.all().delete()
         Collector.objects.bulk_create([Collector(name=collector)
                                        for collector in set(all_collectors)])
+
+
+    def _migrate_references(self):
+        print("Migrating references...")
+        old_georeferences = LegacyGeoreference.objects.all()
+
+        for record in old_georeferences:
+            Reference.objects.get_or_create(name=record.reference_number)
+
+            GeoReference.objects.create(
+                name=record.reference_number,
+                title=record.title,
+                first_author=record.first_author,
+                second_authors=record.second_authors,
+                journal_name=record.journal_name,
+                full_text=record.full_text,
+                journal_name_2=record.journal_name_2,
+                doi=record.doi,
+                publication_year=record.publication_year,
+            )
+
+        old_references = LegacyReference.objects.all()
+
+        for record in old_references:
+            Reference.objects.get_or_create(name=record.name)
+            GeoReference.objects.get_or_create(name=record.name)
 
 
     def _migrate_subsamples(self, old_sample, new_sample):

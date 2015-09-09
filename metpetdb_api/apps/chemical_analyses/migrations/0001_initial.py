@@ -13,9 +13,9 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='ChemicalAnalyses',
+            name='ChemicalAnalysis',
             fields=[
-                ('id', models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True, serialize=False)),
+                ('id', models.UUIDField(serialize=False, primary_key=True, editable=False, default=uuid.uuid4)),
                 ('version', concurrency.fields.AutoIncVersionField(help_text='record revision number', default=0)),
                 ('public_data', models.BooleanField(default=False)),
                 ('reference_x', models.FloatField(blank=True, null=True)),
@@ -38,14 +38,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ChemicalAnalysisElement',
             fields=[
-                ('id', models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True, serialize=False)),
+                ('id', models.UUIDField(serialize=False, primary_key=True, editable=False, default=uuid.uuid4)),
                 ('amount', models.FloatField()),
                 ('precision', models.FloatField(blank=True, null=True)),
                 ('precision_type', models.CharField(blank=True, max_length=3, null=True)),
                 ('measurement_unit', models.CharField(blank=True, max_length=4, null=True)),
                 ('min_amount', models.FloatField(blank=True, null=True)),
                 ('max_amount', models.FloatField(blank=True, null=True)),
-                ('chemical_analysis', models.ForeignKey(to='chemical_analyses.ChemicalAnalyses')),
+                ('chemical_analysis', models.ForeignKey(to='chemical_analyses.ChemicalAnalysis')),
             ],
             options={
                 'db_table': 'chemical_analysis_elements',
@@ -54,14 +54,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ChemicalAnalysisOxide',
             fields=[
-                ('id', models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True, serialize=False)),
+                ('id', models.UUIDField(serialize=False, primary_key=True, editable=False, default=uuid.uuid4)),
                 ('amount', models.FloatField()),
                 ('precision', models.FloatField(blank=True, null=True)),
                 ('precision_type', models.CharField(blank=True, max_length=3, null=True)),
                 ('measurement_unit', models.CharField(blank=True, max_length=4, null=True)),
                 ('min_amount', models.FloatField(blank=True, null=True)),
                 ('max_amount', models.FloatField(blank=True, null=True)),
-                ('chemical_analysis', models.ForeignKey(to='chemical_analyses.ChemicalAnalyses')),
+                ('chemical_analysis', models.ForeignKey(to='chemical_analyses.ChemicalAnalysis')),
             ],
             options={
                 'db_table': 'chemical_analysis_oxides',
@@ -70,10 +70,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Element',
             fields=[
-                ('id', models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('name', models.CharField(unique=True, max_length=100)),
+                ('id', models.UUIDField(serialize=False, primary_key=True, editable=False, default=uuid.uuid4)),
+                ('name', models.CharField(max_length=100, unique=True)),
                 ('alternate_name', models.CharField(blank=True, max_length=100, null=True)),
-                ('symbol', models.CharField(unique=True, max_length=4)),
+                ('symbol', models.CharField(max_length=4, unique=True)),
                 ('atomic_number', models.IntegerField()),
                 ('weight', models.FloatField(blank=True, null=True)),
                 ('order_id', models.IntegerField(blank=True, null=True)),
@@ -85,9 +85,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Oxide',
             fields=[
-                ('id', models.UUIDField(editable=False, default=uuid.uuid4, primary_key=True, serialize=False)),
+                ('id', models.UUIDField(serialize=False, primary_key=True, editable=False, default=uuid.uuid4)),
                 ('oxidation_state', models.SmallIntegerField(blank=True, null=True)),
-                ('species', models.CharField(blank=True, max_length=20, unique=True, null=True)),
+                ('species', models.CharField(blank=True, max_length=20, null=True, unique=True)),
                 ('weight', models.FloatField(blank=True, null=True)),
                 ('cations_per_oxide', models.SmallIntegerField(blank=True, null=True)),
                 ('conversion_factor', models.FloatField()),
@@ -109,7 +109,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(to='chemical_analyses.Element'),
         ),
         migrations.AddField(
-            model_name='chemicalanalyses',
+            model_name='chemicalanalysis',
             name='elements',
             field=models.ManyToManyField(through='chemical_analyses.ChemicalAnalysisElement', to='chemical_analyses.Element'),
         ),

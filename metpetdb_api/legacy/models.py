@@ -315,22 +315,22 @@ class Elements(models.Model):
         db_table = 'elements'
 #
 #
-# class Georeference(models.Model):
-#     georef_id = models.BigIntegerField(primary_key=True)
-#     title = models.TextField()
-#     first_author = models.TextField()
-#     second_authors = models.TextField(blank=True, null=True)
-#     journal_name = models.TextField()
-#     full_text = models.TextField()
-#     reference_number = models.TextField(blank=True, null=True)
-#     reference_id = models.BigIntegerField(blank=True, null=True)
-#     doi = models.TextField(blank=True, null=True)
-#     journal_name_2 = models.TextField(blank=True, null=True)
-#     publication_year = models.TextField(blank=True, null=True)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'georeference'
+class Georeference(models.Model):
+    georef_id = models.BigIntegerField(primary_key=True)
+    title = models.TextField()
+    first_author = models.TextField()
+    second_authors = models.TextField(blank=True, null=True)
+    journal_name = models.TextField()
+    full_text = models.TextField()
+    reference_number = models.TextField(blank=True, null=True)
+    reference_id = models.BigIntegerField(blank=True, null=True)
+    doi = models.TextField(blank=True, null=True)
+    journal_name_2 = models.TextField(blank=True, null=True)
+    publication_year = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'georeference'
 #
 #
 #
