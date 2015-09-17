@@ -12,6 +12,7 @@ class ChemicalAnalysis(models.Model):
     reference_x = models.FloatField(blank=True, null=True)
     reference_y = models.FloatField(blank=True, null=True)
     stage_x = models.FloatField(blank=True, null=True)
+    stage_y = models.FloatField(blank=True, null=True)
     analysis_method = models.CharField(max_length=50, blank=True, null=True)
     where_done = models.CharField(max_length=50, blank=True, null=True)
     analyst = models.CharField(max_length=50, blank=True, null=True)

@@ -87,6 +87,7 @@ class Command(BaseCommand):
                 reference_x=record.reference_x,
                 reference_y=record.reference_y,
                 stage_x = record.stage_x,
+                stage_y = record.stage_y,
                 analysis_method = record.analysis_method,
                 where_done = record.where_done,
                 analyst = record.analyst,
