@@ -1,4 +1,4 @@
-from time import timezone
+from datetime import datetime
 import uuid
 
 from django.db import models
@@ -7,40 +7,46 @@ from django.contrib.auth.models import (
     PermissionsMixin,
     BaseUserManager,
 )
+from rest_framework.authtoken.models import Token
+
 
 class UserManager(BaseUserManager):
 
-    def _create_user(self, email, password,
-                     is_staff, is_superuser, **extra_fields):
+    def _create_user(self, email, password, is_superuser,
+                     is_active=False, **extra_fields):
         """
         Creates and saves a User with the given username, email and password.
         """
-        now = timezone.now()
+        now = datetime.now()
         if not email:
             raise ValueError('The given email must be set')
         email = self.normalize_email(email)
         user = self.model(email=email,
-                          is_staff=is_staff,
-                          is_active=False,
+                          is_active=is_active,
                           is_superuser=is_superuser,
                           last_login=now,
-                          date_joined=now,
                           **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+
+        # create an auth token for the new user
+        Token.objects.create(user=user)
+
         return user
 
-    def create_user(self, email=None, password=None, **extra_fields):
+    def create_user(self, email=None, password=None, is_active=False,
+                    **extra_fields):
         return self._create_user(email,
                                  password,
-                                 is_staff=False,
+                                 is_active=is_active,
                                  is_superuser=False,
                                  **extra_fields)
 
-    def create_superuser(self, email, password, **extra_fields):
+    def create_superuser(self, email, password, is_active=False,
+                         **extra_fields):
         return self._create_user(email,
                                  password,
-                                 is_staff=True,
+                                 is_active=is_active,
                                  is_superuser=True,
                                  **extra_fields)
 
