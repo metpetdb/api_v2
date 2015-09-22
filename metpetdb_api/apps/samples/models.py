@@ -118,13 +118,13 @@ class MetamorphicRegion(models.Model):
 
 class Mineral(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(unique=True, max_length=100)
     # real_mineral is supposed to be NOT NULL, but it's not possible to run
     # the migration with that restriction, so here we go; this can be fixed
     # once the app goes into production.
     real_mineral = models.ForeignKey('self',
                                      blank=True,
                                      null=True)
-    name = models.CharField(unique=True, max_length=100)
 
     class Meta:
         db_table = 'minerals'

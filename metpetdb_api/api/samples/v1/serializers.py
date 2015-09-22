@@ -78,7 +78,6 @@ class SampleSerializer(DynamicFieldsModelSerializer):
         if validated_data.get('samplemineral_set'):
             del validated_data['samplemineral_set']
 
-        print(validated_data)
         instance = super().create(validated_data)
         return instance
 

@@ -1,5 +1,6 @@
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
+
 from api.chemical_analyses.lib.query import chemical_analysis_query
 from api.lib.permissions import IsOwnerOrReadOnly, IsSuperuserOrReadOnly
 from api.lib.query import sample_qs_optimizer, chemical_analyses_qs_optimizer
@@ -76,9 +77,8 @@ class SampleViewSet(viewsets.ModelViewSet):
             try:
                 metamorphic_region = MetamorphicRegion.objects.get(pk=id)
             except:
-                return Response(
-                    data={'error': 'Invalid metamorphic_region id'},
-                    status=400)
+                raise ValueError('Invalid metamorphic_region id: {}'
+                                 .format(id))
             else:
                 metamorphic_regions.append(metamorphic_region)
         instance.metamorphic_regions = metamorphic_regions
@@ -90,9 +90,7 @@ class SampleViewSet(viewsets.ModelViewSet):
             try:
                 metamorphic_grade = MetamorphicGrade.objects.get(pk=id)
             except:
-                return Response(
-                    data={'error': 'Invalid metamorphic_grade id'},
-                    status=400)
+                raise ValueError('Invalid metamorphic_grade id: {}'.format(id))
             else:
                 metamorphic_grades.append(metamorphic_grade)
         instance.metamorphic_grades = metamorphic_grades
@@ -106,9 +104,7 @@ class SampleViewSet(viewsets.ModelViewSet):
                     {'mineral': Mineral.objects.get(pk=record['id']),
                      'amount': record['amount']})
             except Mineral.DoesNotExist:
-                return Response(
-                    data={'error': 'Invalid mineral id'},
-                    status=400)
+                raise ValueError('Invalid mineral id: {}'.format(id))
 
         SampleMineral.objects.filter(sample=instance).delete()
         for record in to_add:
@@ -155,13 +151,33 @@ class SampleViewSet(viewsets.ModelViewSet):
         references = request.data.get('references')
 
         if metamorphic_region_ids:
-            self._handle_metamorphic_regions(instance, metamorphic_region_ids)
+            try:
+                self._handle_metamorphic_regions(instance,
+                                                 metamorphic_region_ids)
+            except ValueError as err:
+                return Response(
+                    data={'error': err.args},
+                    status=400
+                )
 
         if metamorphic_grade_ids:
-            self._handle_metamorphic_grades(instance, metamorphic_grade_ids)
+            try:
+                self._handle_metamorphic_grades(instance,
+                                                metamorphic_grade_ids)
+            except ValueError as err:
+                return Response(
+                    data={'error': err.args},
+                    status=400
+                )
 
         if minerals:
-            self._handle_minerals(instance, minerals)
+            try:
+                self._handle_minerals(instance, minerals)
+            except ValueError as err:
+                return Response(
+                    data={'error': err.args},
+                    status=400
+                )
 
         if references:
             self._handle_references(instance, references)
@@ -192,19 +208,37 @@ class SampleViewSet(viewsets.ModelViewSet):
                 instance.rock_type = rock_type
 
         if 'metamorphic_region_ids' in params:
-            self._handle_metamorphic_regions(
-                instance,
-                params['metamorphic_region_ids'].split(',')
-            )
+            try:
+                self._handle_metamorphic_regions(
+                    instance,
+                    params['metamorphic_region_ids']
+                )
+            except ValueError as err:
+                return Response(
+                    data={'error': err.args},
+                    status=400
+                )
 
         if 'metamorphic_grade_ids' in params:
-            self._handle_metamorphic_grades(
-                instance,
-                params['metamorphic_grade_ids'].split(',')
-            )
+            try:
+                self._handle_metamorphic_grades(
+                    instance,
+                    params['metamorphic_grade_ids']
+                )
+            except ValueError as err:
+                return Response(
+                    data={'error': err.args},
+                    status=400
+                )
 
         if 'minerals' in params:
-            self._handle_minerals(instance, params['minerals'])
+            try:
+                self._handle_minerals(instance, params['minerals'])
+            except ValueError as err:
+                return Response(
+                    data={'error': err.args},
+                    status=400
+                )
 
         if 'references' in params:
             self._handle_references(instance, params['references'])
