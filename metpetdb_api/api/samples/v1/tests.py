@@ -1,5 +1,6 @@
 import json
 import random
+from copy import deepcopy
 
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
@@ -11,7 +12,6 @@ from apps.samples.models import (
     MetamorphicRegion,
     Mineral,
     RockType,
-    Sample,
 )
 from apps.users.models import User
 
@@ -27,7 +27,7 @@ class SampleTests(APITestCase):
             password='contributor1',
             is_active=True
         )
-        self.superuser1 = User.objects.create_user(
+        self.superuser1 = User.objects.create_superuser(
             email='superuser1@metpetb.com',
             password='superuser1',
             is_active=True
@@ -66,16 +66,8 @@ class SampleTests(APITestCase):
         regions = [get_random_str() for i in range(5)]
         countries = [get_random_str() for i in range(5)]
 
-
-    def test_contributor_can_create_update_sample(self):
-        client = APIClient()
-        client.credentials(
-            HTTP_AUTHORIZATION='Token ' + self.contributor1.auth_token.key
-        )
-
-        sample_data = dict(
+        self.sample_data = dict(
             number=get_random_str(),
-            owner=str(self.contributor1.pk),
             rock_type_id=str(self.rock_type.pk),
             aliases=[get_random_str() for i in range(5)],
             description=get_random_str(40),
@@ -97,6 +89,15 @@ class SampleTests(APITestCase):
                                     for mr in self.metamorphic_regions]
         )
 
+
+    def test_contributor_can_create_update_a_sample(self):
+        client = APIClient()
+        client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.contributor1.auth_token.key
+        )
+
+        sample_data = deepcopy(self.sample_data)
+
         res = client.post('/samples/', sample_data)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         res_json = json.loads(res.content.decode('utf-8'))
@@ -116,7 +117,8 @@ class SampleTests(APITestCase):
             ]
         )),
 
-        res = client.put('/samples/{}/'.format(res_json['id']), sample_data)
+        res = client.put('/samples/{}/'.format(res_json['id']),
+                         sample_data)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         res_json = json.loads(res.content.decode('utf-8'))
 
@@ -125,3 +127,53 @@ class SampleTests(APITestCase):
             set(mineral['id'] for mineral in res_json['minerals']),
             set(mineral['id'] for mineral in sample_data['minerals'])
         )
+
+
+    def test_superuser_can_edit_an_unowned_sample(self):
+        client = APIClient()
+        client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.superuser1.auth_token.key
+        )
+
+        sample_data = deepcopy(self.sample_data)
+
+        res = client.post('/samples/', sample_data)
+        res_json = json.loads(res.content.decode('utf-8'))
+
+        updated_sample_number = get_random_str()
+        sample_data['number'] = updated_sample_number
+        sample_data.update(dict(
+            minerals=[
+                {
+                    "id": str(self.minerals[2].pk),
+                    "amount": "y",
+                },
+                {
+                    "id": str(self.minerals[3].pk),
+                    "amount": "y",
+                },
+            ]
+        )),
+
+        res = client.put('/samples/{}/'.format(res_json['id']),
+                         sample_data)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        res_json = json.loads(res.content.decode('utf-8'))
+
+        self.assertEqual(res_json['number'], updated_sample_number)
+        self.assertEqual(
+            set(mineral['id'] for mineral in res_json['minerals']),
+            set(mineral['id'] for mineral in sample_data['minerals'])
+        )
+
+
+    def test_inactive_user_cannot_create_a_sample(self):
+        client = APIClient()
+        client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.inactive_user.auth_token.key
+        )
+
+        sample_data = deepcopy(self.sample_data)
+
+        res = client.post('/samples/', sample_data)
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
