@@ -5,7 +5,6 @@ from copy import deepcopy
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
-
 from apps.samples.models import (
     GeoReference,
     MetamorphicGrade,
@@ -15,9 +14,11 @@ from apps.samples.models import (
 )
 from apps.users.models import User
 
+
 def get_random_str(length=10):
     return ''.join(random.choice('abcdefghijklmnopqrstuvwxyz')
                    for x in range(length))
+
 
 class SampleTests(APITestCase):
 
@@ -140,8 +141,7 @@ class SampleTests(APITestCase):
         res = client.post('/samples/', sample_data)
         res_json = json.loads(res.content.decode('utf-8'))
 
-        updated_sample_number = get_random_str()
-        sample_data['number'] = updated_sample_number
+        sample_data['number'] = get_random_str()
         sample_data.update(dict(
             minerals=[
                 {
@@ -173,7 +173,5 @@ class SampleTests(APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.inactive_user.auth_token.key
         )
 
-        sample_data = deepcopy(self.sample_data)
-
-        res = client.post('/samples/', sample_data)
+        res = client.post('/samples/', self.sample_data)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
