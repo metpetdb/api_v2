@@ -15,6 +15,7 @@ from apps.samples.models import (
     Reference,
     Collector,
     Subsample,
+    SubsampleType,
 )
 from apps.users.models import User
 
@@ -104,6 +105,12 @@ class SubsampleSerializer(DynamicFieldsModelSerializer):
     # sample = SampleSerializer(read_only=True)
     class Meta:
         model = Subsample
+        depth = 1
+
+
+class SubsampleTypeSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = SubsampleType
         depth = 1
 
 

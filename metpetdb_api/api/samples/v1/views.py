@@ -1,5 +1,6 @@
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from api.chemical_analyses.lib.query import chemical_analysis_query
 from api.lib.permissions import IsOwnerOrReadOnly, IsSuperuserOrReadOnly
@@ -16,9 +17,11 @@ from api.samples.v1.serializers import (
     SubsampleSerializer,
     MetamorphicRegionSerializer,
     MetamorphicGradeSerializer,
+    SubsampleTypeSerializer,
 )
 from apps.chemical_analyses.models import ChemicalAnalysis
 from apps.samples.models import (
+    Country,
     Sample,
     RockType,
     Mineral,
@@ -30,6 +33,7 @@ from apps.samples.models import (
     MetamorphicGrade,
     SampleMineral,
     GeoReference,
+    SubsampleType,
 )
 
 
@@ -104,7 +108,7 @@ class SampleViewSet(viewsets.ModelViewSet):
                     {'mineral': Mineral.objects.get(pk=record['id']),
                      'amount': record['amount']})
             except Mineral.DoesNotExist:
-                raise ValueError('Invalid mineral id: {}'.format(id))
+                raise ValueError('Invalid mineral id: {}'.format(record['id']))
 
         SampleMineral.objects.filter(sample=instance).delete()
         for record in to_add:
@@ -256,6 +260,13 @@ class SubsampleViewSet(viewsets.ModelViewSet):
                           IsOwnerOrReadOnly,)
 
 
+class SubsampleTypeViewSet(viewsets.ModelViewSet):
+    queryset = SubsampleType.objects.all()
+    serializer_class = SubsampleTypeSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsSuperuserOrReadOnly,)
+
+
 class RockTypeViewSet(viewsets.ModelViewSet):
     queryset = RockType.objects.all()
     serializer_class = RockTypeSerializer
@@ -273,16 +284,22 @@ class MineralViewSet(viewsets.ModelViewSet):
 class RegionViewSet(viewsets.ModelViewSet):
     queryset = Region.objects.all()
     serializer_class = RegionSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsSuperuserOrReadOnly,)
 
 
 class ReferenceViewSet(viewsets.ModelViewSet):
     queryset = Reference.objects.all()
     serializer_class = ReferenceSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsSuperuserOrReadOnly,)
 
 
 class CollectorViewSet(viewsets.ModelViewSet):
     queryset = Collector.objects.all()
     serializer_class = CollectorSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsSuperuserOrReadOnly,)
 
 
 class MetamorphicRegionViewSet(viewsets.ModelViewSet):
@@ -304,3 +321,27 @@ class GeoReferenceViewSet(viewsets.ModelViewSet):
     serializer_class = MetamorphicRegionSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsSuperuserOrReadOnly,)
+
+
+class SampleNumbersView(APIView):
+    def get(self, request, format=None):
+        sample_numbers = (
+            Sample
+            .objects
+            .all()
+            .values_list('number', flat=True)
+            .distinct()
+        )
+        return Response({'sample_numbers': sample_numbers})
+
+
+class CountryNamesView(APIView):
+    def get(self, request, format=None):
+        country_names = (
+            Country
+            .objects
+            .all()
+            .values_list('name', flat=True)
+            .distinct()
+        )
+        return Response({'country_names': country_names})

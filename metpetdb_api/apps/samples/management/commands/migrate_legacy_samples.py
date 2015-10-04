@@ -5,6 +5,7 @@ from django.db import transaction
 from apps.common.utils import queryset_iterator
 from apps.samples.models import (
     Collector,
+    Country,
     GeoReference,
     Grid,
     MetamorphicGrade,
@@ -53,6 +54,7 @@ class Command(BaseCommand):
         self._migrate_subsample_types()
         self._migrate_references()
         self._migrate_samples()
+        self._migrate_countries()
 
 
     @transaction.atomic
@@ -301,3 +303,15 @@ class Command(BaseCommand):
                     name=record.child_mineral.name
                 )
             )
+
+    @transaction.atomic
+    def _migrate_countries(self):
+        print("Migrating country names...")
+        country_names = (Sample
+                         .objects
+                         .all()
+                         .values_list('country', flat=True)
+                         .distinct())
+        country_names = [name for name in country_names if name is not None]
+        Country.objects.bulk_create([Country(name=name)
+                                     for name in country_names])

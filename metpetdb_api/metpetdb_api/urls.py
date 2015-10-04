@@ -20,7 +20,6 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 from rest_framework import routers
-from rest_framework.authtoken import views
 
 
 from api.chemical_analyses.v1.views import (
@@ -39,6 +38,9 @@ from api.samples.v1.views import (
     MetamorphicRegionViewSet,
     MetamorphicGradeViewSet,
     GeoReferenceViewSet,
+    SubsampleTypeViewSet,
+    SampleNumbersView,
+    CountryNamesView,
 )
 from api.users.v1.views import UserViewSet
 
@@ -46,6 +48,7 @@ router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'samples', SampleViewSet)
 router.register(r'subsamples', SubsampleViewSet)
+router.register(r'subsample_types', SubsampleTypeViewSet)
 router.register(r'chemical_analyses', ChemicalAnalysisViewSet)
 router.register(r'metamorphic_regions', MetamorphicRegionViewSet)
 router.register(r'metamorphic_grades', MetamorphicGradeViewSet)
@@ -62,4 +65,7 @@ urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^auth/', include('djoser.urls.authtoken')),
+
+    url(r'^sample_numbers/$', SampleNumbersView.as_view()),
+    url(r'^country_names/$', CountryNamesView.as_view()),
 ]
