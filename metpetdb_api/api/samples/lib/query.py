@@ -3,6 +3,9 @@ from django.contrib.gis.geos import Polygon
 
 def sample_query(params, qs):
 
+    if params.get('ids'):
+        qs = qs.filter(pk__in=params['ids'].split(','))
+
     if params.get('collectors'):
         qs = qs.filter(collector_name__in=params['collectors'].split(','))
 
