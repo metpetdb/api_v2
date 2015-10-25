@@ -13,7 +13,7 @@ from apps.chemical_analyses.models import (
 from apps.samples.models import Subsample, Mineral
 from apps.users.models import User
 
-CHEMICAL_ANALYSIS_FIELDS = ('reference_x', 'reference_y', 'stage_x',
+CHEMICAL_ANALYSIS_FIELDS = ('reference_x', 'reference_y', 'stage_x', 'stage_y',
                             'analysis_method', 'where_done', 'analyst',
                             'analysis_date', 'date_precision',
                             'description', 'total', 'spot_id', 'reference')
