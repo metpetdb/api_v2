@@ -44,6 +44,9 @@ def sample_query(params, qs):
     if params.get('owners'):
         qs = qs.filter(user__name__in=params['owners'].split(','))
 
+    if params.get('emails'):
+        qs = qs.filter(user__email__in=params['emails'].split(','))
+
     if params.get('references'):
         qs = qs.filter(references__overlap=params['references'].split(','))
 
