@@ -62,7 +62,13 @@ class SampleViewSet(viewsets.ModelViewSet):
                   .filter(subsamples__chemical_analyses__id__in=chem_ids))
         else:
             qs = self.get_queryset().distinct()
-            qs = sample_query(params, qs)
+            try:
+                qs = sample_query(params, qs)
+            except ValueError as err:
+                return Response(
+                    data={'error': err.args},
+                    status=400
+                )
 
         qs = sample_qs_optimizer(params, qs)
 

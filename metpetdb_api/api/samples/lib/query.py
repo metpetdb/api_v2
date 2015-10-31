@@ -1,4 +1,5 @@
-from django.contrib.gis.geos import Polygon
+import json
+from django.contrib.gis.geos import Polygon, GEOSException
 
 
 def sample_query(params, qs):
@@ -18,6 +19,14 @@ def sample_query(params, qs):
     if params.get('location_bbox'):
         bbox  = Polygon.from_bbox(params['location_bbox'].split(','))
         qs = qs.filter(location_coords__contained=bbox)
+
+    if params.get('polygon_coords'):
+        try:
+            polygon = Polygon((json.loads(params['polygon_coords'])))
+        except GEOSException:
+            raise ValueError("Invalid polygon coordinates. Please check if "
+                             "the points form a closed linestring or not.")
+        qs = qs.filter(location_coords__contained=polygon)
 
     if params.get('metamorphic_grades'):
         metamorphic_grades = params['metamorphic_grades'].split(',')
