@@ -1,4 +1,13 @@
-def chemical_analysis_query(params, qs):
+from django.contrib.auth.models import AnonymousUser
+from django.db.models import Q
+
+
+def chemical_analysis_query(user, params, qs):
+    if isinstance(user, AnonymousUser):
+        qs = qs.filter(public_data=True)
+    else:
+        qs = qs.filter(Q(owner=user) | Q(public_data=True))
+
     if params.get('minerals'):
         qs = qs.filter(mineral__name__in=params['minerals'].split(','))
 
@@ -38,11 +47,5 @@ def chemical_analysis_query(params, qs):
 
     if params.get('subsample_ids'):
         qs = qs.filter(subsample_id__in=params.get('subsample_ids').split(','))
-
-    if params.get('public_data'):
-        if params['public_data'] == 'True':
-            qs = qs.filter(public_data=True)
-        elif params['public_data'] == 'False':
-            qs = qs.filter(public_data=False)
 
     return qs

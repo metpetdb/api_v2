@@ -39,12 +39,14 @@ class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
         if params.get('sample_filters') == 'True':
             sample_qs = Sample.objects.all()
             sample_qs = sample_qs_optimizer(params, sample_qs)
-            sample_ids = sample_query(params, sample_qs).values_list('id')
+            sample_ids = sample_query(request.user,
+                                      params,
+                                      sample_qs).values_list('id')
             qs = ChemicalAnalysis.objects.filter(
                 subsample__sample_id__in=sample_ids)
         else:
             qs = self.get_queryset().distinct()
-            qs = chemical_analysis_query(params, qs)
+            qs = chemical_analysis_query(request.user, params, qs)
 
         qs = chemical_analyses_qs_optimizer(params, qs)
 

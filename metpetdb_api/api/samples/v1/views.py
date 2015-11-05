@@ -55,7 +55,7 @@ class SampleViewSet(viewsets.ModelViewSet):
         if params.get('chemical_analyses_filters') == 'True':
             chem_qs = ChemicalAnalysis.objects.all()
             chem_qs = chemical_analyses_qs_optimizer(params, chem_qs)
-            chem_ids = (chemical_analysis_query(params, chem_qs)
+            chem_ids = (chemical_analysis_query(request.user, params, chem_qs)
                         .values_list('id'))
             qs = (Sample
                   .objects
@@ -63,7 +63,7 @@ class SampleViewSet(viewsets.ModelViewSet):
         else:
             qs = self.get_queryset().distinct()
             try:
-                qs = sample_query(params, qs)
+                qs = sample_query(request.user, params, qs)
             except ValueError as err:
                 return Response(
                     data={'error': err.args},
