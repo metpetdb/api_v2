@@ -54,10 +54,10 @@ def sample_query(params, qs):
             qs = qs.filter(minerals__name__in=minerals)
 
     if params.get('owners'):
-        qs = qs.filter(user__name__in=params['owners'].split(','))
+        qs = qs.filter(owner__name__in=params['owners'].split(','))
 
     if params.get('emails'):
-        qs = qs.filter(user__email__in=params['emails'].split(','))
+        qs = qs.filter(owner__email__in=params['emails'].split(','))
 
     if params.get('references'):
         qs = qs.filter(references__overlap=params['references'].split(','))
