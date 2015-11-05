@@ -60,7 +60,7 @@ def sample_query(params, qs):
         qs = qs.filter(owner__email__in=params['emails'].split(','))
 
     if params.get('references'):
-        qs = qs.filter(references__overlap=params['references'].split(','))
+        qs = qs.filter(references__name__in=params['references'].split(','))
 
     if params.get('regions'):
         qs = qs.filter(regions__overlap=params['regions'].split(','))
