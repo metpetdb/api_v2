@@ -198,7 +198,6 @@ class Command(BaseCommand):
 
 
     def _migrate_subsamples(self, old_sample, new_sample):
-        print("Migrating subsamples...")
         old_records = LegacySubsample.objects.filter(sample=old_sample)
 
         for record in old_records:
