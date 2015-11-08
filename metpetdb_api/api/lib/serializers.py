@@ -12,6 +12,8 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
         super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)
 
         if self.context.get('request'):
+            self.context['request'].data._mutable = True
+
             if self.context['request'].method == 'POST':
                 # An object's owner should be the user making the request;
                 # objects which don't have an owner can just ignore this
@@ -22,6 +24,7 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                 # Don't allow PUT operations to update an object's owner
                 self.context['request'].data.pop('owner', None)
 
+            self.context['request'].data._mutable = False
         try:
             fields = self.context['request'].query_params.get('fields')
         except KeyError:
