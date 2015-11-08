@@ -62,10 +62,10 @@ router.register(r'references', ReferenceViewSet)
 router.register(r'collectors', CollectorViewSet)
 
 urlpatterns = [
-    url(r'^', include(router.urls)),
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^auth/', include('djoser.urls.authtoken')),
+    url(r'^api/', include(router.urls)),
+    url(r'^api/admin/', include(admin.site.urls)),
+    url(r'^api/auth/', include('djoser.urls.authtoken')),
 
-    url(r'^sample_numbers/$', SampleNumbersView.as_view()),
-    url(r'^country_names/$', CountryNamesView.as_view()),
+    url(r'^api/sample_numbers/$', SampleNumbersView.as_view()),
+    url(r'^api/country_names/$', CountryNamesView.as_view()),
 ]
