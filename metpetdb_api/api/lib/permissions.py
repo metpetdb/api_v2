@@ -52,6 +52,15 @@ class UserPermission(permissions.BasePermission):
         - users to view their own details
     """
 
+    def has_permission(self, request, view):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        if request.user.is_superuser:
+            return True
+        has_perm = False
+        return has_perm
+
     def has_object_permission(self, request, view, obj):
         if request.user.is_superuser:
             return True
