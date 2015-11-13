@@ -56,8 +56,9 @@ class UserPermission(permissions.BasePermission):
         """
         Return `True` if permission is granted, `False` otherwise.
         """
-        if request.user.is_superuser:
+        if request.user.is_active:
             return True
+
         has_perm = False
         return has_perm
 
