@@ -1,3 +1,4 @@
+from django.http.request import QueryDict
 from rest_framework import serializers
 
 
@@ -12,7 +13,8 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
         super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)
 
         if self.context.get('request'):
-            self.context['request'].data._mutable = True
+            if isinstance(self.context['request'].data, QueryDict):
+                self.context['request'].data._mutable = True
 
             if self.context['request'].method == 'POST':
                 # An object's owner should be the user making the request;
@@ -24,7 +26,8 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                 # Don't allow PUT operations to update an object's owner
                 self.context['request'].data.pop('owner', None)
 
-            self.context['request'].data._mutable = False
+            if isinstance(self.context['request'].data, QueryDict):
+                self.context['request'].data._mutable = False
         try:
             fields = self.context['request'].query_params.get('fields')
         except KeyError:
