@@ -41,6 +41,7 @@ from api.samples.v1.views import (
     SubsampleTypeViewSet,
     SampleNumbersView,
     CountryNamesView,
+    SampleOwnerNamesView,
 )
 from api.users.v1.views import UserViewSet
 
@@ -68,4 +69,5 @@ urlpatterns = [
 
     url(r'^api/sample_numbers/$', SampleNumbersView.as_view()),
     url(r'^api/country_names/$', CountryNamesView.as_view()),
+    url(r'^api/sample_owner_names/$', SampleOwnerNamesView.as_view()),
 ]

@@ -351,3 +351,15 @@ class CountryNamesView(APIView):
             .distinct()
         )
         return Response({'country_names': country_names})
+
+
+class SampleOwnerNamesView(APIView):
+    def get(self, request, format=None):
+        sample_owner_names = (
+            Sample
+            .objects
+            .all()
+            .values_list('owner__name', flat=True)
+            .distinct()
+        )
+        return Response({'sample_owner_names': sample_owner_names})
