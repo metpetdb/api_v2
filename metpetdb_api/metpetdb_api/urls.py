@@ -45,6 +45,9 @@ from api.samples.v1.views import (
 )
 from api.users.v1.views import UserViewSet
 
+from api.bulk_upload.v1.views import BulkUploadViewSet
+
+
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'samples', SampleViewSet)
@@ -61,6 +64,7 @@ router.register(r'rock_types', RockTypeViewSet)
 router.register(r'regions', RegionViewSet)
 router.register(r'references', ReferenceViewSet)
 router.register(r'collectors', CollectorViewSet)
+router.register(r'bulk_upload', BulkUploadViewSet)
 
 urlpatterns = [
     url(r'^api/', include(router.urls)),
