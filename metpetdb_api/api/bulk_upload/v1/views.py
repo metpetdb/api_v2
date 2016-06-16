@@ -51,7 +51,7 @@ from api.lib.permissions import IsOwnerOrReadOnly, IsSuperuserOrReadOnly
 from api.lib.query import sample_qs_optimizer, chemical_analyses_qs_optimizer
 from api.samples.lib.query import sample_query
 
-from apps.samples.models import Sample, Mineral, Subsample
+from apps.samples.models import Sample, Mineral, Subsample, BulkUpload
 from apps.chemical_analyses.models import (
     ChemicalAnalysis,
     ChemicalAnalysisElement,
@@ -90,7 +90,7 @@ class Parser:
             raise ValueError(str(err))
 
 class BulkUploadViewSet(viewsets.ModelViewSet):
-    queryset = Sample.objects.all()
+    queryset = BulkUpload.objects.none()
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,)
     http_method_names=['post'] 
