@@ -82,7 +82,7 @@ class Parser:
     # Effects: Generates JSON file from passed template
     def parse(self, url):   
         try:
-            url = url[:-1] +'1'
+            url = url[:-1] +'1' # specific to dropBox urls
             content = urllib.request.urlopen(url).read()
             lined = self.line_split(content)
             return  self.template.parse(lined) # return the JSON ready file
@@ -108,13 +108,13 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
         instance.metamorphic_regions = metamorphic_regions
 
 
-    def _handle_metamorphic_grades(self, instance, ids):
+    def _handle_metamorphic_grades(self, instance, grades):
         metamorphic_grades = []
-        for id in ids:
+        for grade in grades:
             try:
-                metamorphic_grade = MetamorphicGrade.objects.get(pk=id)
+                metamorphic_grade = MetamorphicGrade.objects.get(name=grade)
             except:
-                raise ValueError('Invalid metamorphic_grade id: {}'.format(id))
+                raise ValueError('Invalid metamorphic_grade : {}'.format(grade))
             else:
                 metamorphic_grades.append(metamorphic_grade)
         instance.metamorphic_grades = metamorphic_grades
@@ -350,7 +350,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_201_CREATED,
                         headers=headers)
 
-    def parse_samples(self, request, JSON):
+    def parse_samples(self, request, JSON, meta_header):
         for sample_obj in JSON:
             try:
                 sample_obj['owner'] = request.data.get('owner')
@@ -361,14 +361,14 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                 )
 
             minerals = sample_obj['mineral'] 
-            rock_type = sample_obj['rock_type_id']
+            rock_type = sample_obj['rock_type_name']
             to_add = []
 
             for mineral in minerals:
                 try:
                     to_add.append(
                         {'id': Mineral.objects.get(name=mineral['name']).id,
-                        'amount': mineral['amount']})
+                        'amount': '0'})
                 except:
                     sample_obj['errors']['minerals'] = 'Invalid mineral {0}'.format(mineral)
                     return Response(
@@ -377,7 +377,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                     )
 
             sample_obj['minerals'] = to_add
-            
+                        
             del(sample_obj['mineral'])
           
             # Need this for a proper collection date 
@@ -405,7 +405,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
             instance = self.perform_create(serializer)
         
             metamorphic_region_ids = sample_obj.get('metamorphic_region_id')
-            metamorphic_grade_ids = sample_obj.get('metamorphic_grade_id')           
+            metamorphic_grades = sample_obj.get('metamorphic_grade')           
             references = sample_obj.get('references')
             minerals = sample_obj.get('minerals')
 
@@ -420,12 +420,12 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                         status=400
                     )
 
-            if metamorphic_grade_ids:
+            if metamorphic_grades:
                 try:
                     self._handle_metamorphic_grades(instance,
-                                                    metamorphic_grade_ids)
+                                                    metamorphic_grades)
                 except ValueError as err:
-                    sample_obj['errors']['metamorphic_grade_ids'] = err.args
+                    sample_obj['errors']['metamorphic_grades'] = err.args
                     return Response(
                         data=JSON,
                         status=400
@@ -443,7 +443,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
 
             if references:
                 self._handle_references(instance, references)
-
+        JSON.append({"meta_header": meta_header})    
         headers = self.get_success_headers(serializer.data)
         return Response(JSON,
                         status=status.HTTP_201_CREATED,
@@ -471,9 +471,9 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
         # These are errors that are catchable without the data model
         
         try: 
-            p = Parser(template_instance) 
-            JSON = p.parse(url)
-            json.dumps(JSON)                   
+            p = Parser(template_instance)
+            JSON,meta_header = p.parse(url)
+            json.dumps(JSON)
 
         except Exception as err:
             return Response(
@@ -481,6 +481,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                 status = 400
             )
 
+        
         for obj in JSON:
             if len(obj['errors']) > 0:
                 return Response(JSON,
@@ -489,7 +490,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
         
         if template_name == 'SampleTemplate':
             self.serializer_class = SampleSerializer
-            return self.parse_samples(request, JSON)
+            return self.parse_samples(request, JSON, meta_header)
         elif template_name == 'ChemicalAnalysesTemplate':
             self.serializer_class = ChemicalAnalysisSerializer
             return self.parse_chemical_analyses(request,JSON)
