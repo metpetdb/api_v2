@@ -80,7 +80,7 @@ class Subsample(models.Model):
     version = AutoIncVersionField()
     sample = models.ForeignKey(Sample, related_name='subsamples')
     public_data = models.BooleanField(default=False)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='subsamples')
     subsample_type = models.ForeignKey(SubsampleType)
 
     class Meta:

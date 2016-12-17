@@ -24,6 +24,8 @@ SAMPLE_FIELDS = ('number', 'aliases', 'collection_date', 'description',
                  'date_precision', 'country', 'regions', 'collector_name',
                  'collector_id', 'sesar_number',)
 
+SUBSAMPLE_FIELDS = ('name')
+
 class RockTypeSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = RockType
@@ -102,10 +104,49 @@ class SampleSerializer(DynamicFieldsModelSerializer):
 
 
 class SubsampleSerializer(DynamicFieldsModelSerializer):
-    # sample = SampleSerializer(read_only=True)
+    sample = SampleSerializer(read_only=True)
+    owner = UserSerializer(read_only=True)
+    
     class Meta:
         model = Subsample
         depth = 1
+
+    def is_valid(self, raise_exception=False):
+        super().is_valid(raise_exception)
+
+        if self.initial_data.get('owner'):
+            self._validated_data.update(
+                {'owner': User.objects.get(pk=self.initial_data['owner'])})
+        
+        if self.initial_data.get('sample'):
+            self._validated_data.update(
+                {'sample': (Sample
+                               .objects
+                               .get(pk=self.initial_data['sample']))
+                 }
+            )
+        
+        if self.initial_data.get('subsample_type'):
+            self._validated_data.update(
+                {'subsample_type': (SubsampleType
+                               .objects
+                               .get(pk=self.initial_data['subsample_type']))
+                 }
+            )
+        
+        return not bool(self._errors)
+
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            if attr in SUBSAMPLE_FIELDS:
+                setattr(instance, attr, value)
+        instance.save()
+
+        return instance    
 
 
 class SubsampleTypeSerializer(DynamicFieldsModelSerializer):
