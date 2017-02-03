@@ -265,6 +265,64 @@ class SubsampleViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,)
 
+    def get_serializer(self, *args, **kwargs):
+        if self.request.method == 'PUT':
+            kwargs['partial'] = True
+        return super().get_serializer(*args, **kwargs)
+
+
+    def list(self, request, *args, **kwargs):
+        
+        params = request.query_params
+
+        qs = self.get_queryset().distinct()
+        
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+      
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
+
+    def perform_create(self, serializer):
+        return serializer.save()
+
+    def update(self, request, *args, **kwargs):
+        params = request.data
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance,
+                                         data=request.data,
+                                         partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if 'sample' in params:
+            try:
+                sample = Sample.objects.get(pk=params['sample'])
+            except Sample.DoesNotExist:
+                return Response(data={'error': 'Invalid sample id'},
+                                status=400)
+            else:
+                instance.sample = sample
+
+        if 'subsample_type' in params:
+            try:
+                subsample_type = SubsampleType.objects.get(pk=params['subsample_type'])
+            except SubsampleType.DoesNotExist:
+                return Response(data={'error': 'Invalid subsample type'},
+                                status=400)
+            else:
+                instance.subsample_type = subsample_type     
+
+        instance.save()
+        # refresh the data before returning a response
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    
 
 class SubsampleTypeViewSet(viewsets.ModelViewSet):
     queryset = SubsampleType.objects.all()
