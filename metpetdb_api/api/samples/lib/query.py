@@ -11,6 +11,14 @@ def sample_query(user, params, qs):
     else:
         qs = qs.filter(Q(owner=user) | Q(public_data=True))
 
+    if params.get('provenance'):
+        if(params.get('provenance')=="Public"):
+            qs = qs.filter(public_data=True)
+        elif(params.get('provenance') == "Private"):
+            qs = qs.filter(public_data=False | Q(owner=user))
+        else:
+            qs = qs.filter(Q(owner=user) | Q(public_data=True))
+
     if params.get('ids'):
         qs = qs.filter(pk__in=params['ids'].split(','))
 
