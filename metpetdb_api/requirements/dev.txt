@@ -9,3 +9,5 @@ psycopg2>=2.6.1
 six>=1.9.0
 sqlparse>=0.1.15
 wheel>=0.24.0
+djoser>=0.5.4
+pathlib
