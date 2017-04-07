@@ -27,12 +27,13 @@ All other fields are assumed to be simple, i.e. directly mapped
 import copy
 
 class Template:
-    def __init__(self, c_types = [], required = [], db_types = []): 
+    def __init__(self, c_types = [], required = [], db_types = [], types = {}): 
         self.complex_types = c_types
         self.required = required 
         self.db_types = db_types
         self.data = ''
         self.amounts = {'mineral', 'element', 'oxide'}
+        self.types = types
 
     def check_line_len(self):
         data = self.data
@@ -51,10 +52,33 @@ class Template:
                 if row[1][i] == '':
                     missing[header[i]] = 'missing'
         return missing
+
+    def check_type(self, curr_row):
+        errors = {}
+        header = curr_row[0]
+        for i in range(0,len(header)):
+            if header[i] in self.types.keys():
+                # try to convert the field to the required type  
+                if not isinstance(curr_row[1][i], self.types[header[i]]):
+                    try:
+                        curr_row[1][i] = self.types[header[i]](curr_row[1][i])
+                    except:
+                        errors[header[i]] = '{0} expected'.format(self.types[header[i]])
+        return errors
+
+    def check_data(self,curr_row):        
+        errors = {}
+        self.check_line_len()
         
-    def check_type(self):
-        pass
-    
+        req_resp = self.check_required(curr_row)
+        if len(req_resp) > 0:
+            errors.update(req_resp)
+        
+        type_resp = self.check_type(curr_row)
+        if len(type_resp) > 0:
+            errors.update(type_resp)
+        return errors
+
     class TemplateResult:
         def __init__(self, r_template): 
             self.rep = r_template
@@ -67,16 +91,6 @@ class Template:
 
         def get_rep(self): return self.rep
 
-    def check_data(self,curr_row):
-        errors = {}
-        self.check_line_len()
-        
-        req_resp = self.check_required(curr_row)
-        if (len(req_resp) != 0):
-            errors.update(req_resp)
-        
-        self.check_type()
-        return errors
 
     def parse(self, data):
         self.data = data
@@ -125,7 +139,7 @@ class ChemicalAnalysesTemplate(Template):
         required = ["subsample_id", "spot_id", "mineral", "analysis_method"]
         db_types = ["element", "oxide"]
         types = {"comment": str, "stage_x" : float, "stage_y" : float, "reference_x": float, "reference_y": float}
-        Template.__init__(self, complex_types, required, db_types)
+        Template.__init__(self, complex_types, required, db_types, types)
 
     def check_amounts(self,header):
         amounts = ['elements', 'oxides']
@@ -139,10 +153,19 @@ class ChemicalAnalysesTemplate(Template):
     def get_amount(self,data=[], i=0,j=0):
         return data[i][j+1]
     
-    #TODO implement this
     def get_meta_header(self,header):
         mappings = {}
-        return []
+        added = set() 
+        meta_header = []
+        itr = iter(header)
+        for heading in itr:
+            if heading not in added:
+                if heading in mappings.keys():
+                    meta_header.append((heading, mappings[heading]))
+                    added.add(heading)
+                else:
+                    meta_header.append((heading, heading)) 
+        return meta_header
 
 class SampleTemplate(Template):
     
@@ -152,7 +175,7 @@ class SampleTemplate(Template):
         types = {"comment": str}
         db_types = ["minerals"]
         #selected_types = {'minerals': ['el1', 'el2', 'el3']}
-        Template.__init__(self, complex_types, required, db_types)
+        Template.__init__(self, complex_types, required, db_types, types)
    
     def check_amounts(self,header):
         pass
