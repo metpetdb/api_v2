@@ -37,6 +37,10 @@ class SampleTests(APITestCase):
             email='inactive@metpetdb.com'
         )
 
+        self.test_user_1 = User.objects.create_user(
+            email='lucien@metpetdb.com'
+        )
+
         self.rock_type = RockType.objects.create(name=get_random_str())
         self.metamorphic_grades= MetamorphicGrade.objects.bulk_create(
             [MetamorphicGrade(name=get_random_str()) for i in range(5)]
@@ -68,6 +72,56 @@ class SampleTests(APITestCase):
         countries = [get_random_str() for i in range(5)]
 
         self.sample_data = dict(
+            number=get_random_str(),
+            rock_type_id=str(self.rock_type.pk),
+            aliases=[get_random_str() for i in range(5)],
+            description=get_random_str(40),
+            location_coords="SRID=4326;POINT (-118.4008865356450002 "
+                            "49.1695137023925994)",
+            minerals=[
+                {
+                    "id": str(self.minerals[0].pk),
+                    "amount": "x",
+                },
+                {
+                    "id": str(self.minerals[1].pk),
+                    "amount": "x",
+                },
+            ],
+            metamorphic_grade_ids=[str(mg.pk)
+                                   for mg in self.metamorphic_grades],
+            metamorphic_region_ids=[str(mr.pk)
+                                    for mr in self.metamorphic_regions]
+        )
+        
+        self.public_data_1 = dict(
+            public_data = True,
+            owner = self.test_user_1,
+            number=get_random_str(),
+            rock_type_id=str(self.rock_type.pk),
+            aliases=[get_random_str() for i in range(5)],
+            description=get_random_str(40),
+            location_coords="SRID=4326;POINT (-118.4008865356450002 "
+                            "49.1695137023925994)",
+            minerals=[
+                {
+                    "id": str(self.minerals[0].pk),
+                    "amount": "x",
+                },
+                {
+                    "id": str(self.minerals[1].pk),
+                    "amount": "x",
+                },
+            ],
+            metamorphic_grade_ids=[str(mg.pk)
+                                   for mg in self.metamorphic_grades],
+            metamorphic_region_ids=[str(mr.pk)
+                                    for mr in self.metamorphic_regions]
+        )
+
+        self.private_data_1 = dict(
+            public_data=False,
+            owner = self.test_user_1,
             number=get_random_str(),
             rock_type_id=str(self.rock_type.pk),
             aliases=[get_random_str() for i in range(5)],
@@ -138,8 +192,10 @@ class SampleTests(APITestCase):
         )
 
         sample_data = deepcopy(self.sample_data)
+        print "Sample_data:",sample_data
 
         res = client.post('/api/samples/', sample_data)
+
         res_json = json.loads(res.content.decode('utf-8'))
 
         updated_sample_number = get_random_str()
@@ -179,3 +235,13 @@ class SampleTests(APITestCase):
 
         res = client.post('/api/samples/', self.sample_data)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+    def test_test_user_1_can_filter_by_provenance_private(self):
+        pass
+
+    def test_test_user_1_can_filter_by_provenance_public(self):
+        pass
+
+    def test_test_user_1_can_filter_by_provenance_no_preference(self): 
+        pass
