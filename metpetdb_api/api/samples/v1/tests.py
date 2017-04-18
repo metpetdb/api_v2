@@ -238,6 +238,13 @@ class SampleTests(APITestCase):
 
 
     def test_test_user_1_can_filter_by_provenance_private(self):
+        client = APIClient()
+        client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.test_user_1.auth_token.key
+        )
+        public_data = deepcopy(self.public_data_1)
+        res = client.get('/api/samples/',public_data)
+        print("res:",len(res))
         pass
 
     def test_test_user_1_can_filter_by_provenance_public(self):
