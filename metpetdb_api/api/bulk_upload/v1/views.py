@@ -348,7 +348,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
 
     def parse_samples(self, request, JSON, meta_header):
         before_parse_json = list(JSON)
-  
+
         for i,sample_obj in enumerate(JSON):
             try:
                 sample_obj['owner'] = request.data.get('owner')
@@ -358,7 +358,8 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                     status = 400
                 )
 
-            minerals = sample_obj['mineral'] 
+            minerals = sample_obj['mineral']
+
             rock_type = sample_obj['rock_type_name']
             to_add = []
 
@@ -366,7 +367,8 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                 try:
                     to_add.append(
                         {'id': Mineral.objects.get(name=mineral['name']).id,
-                        'amount': '0'})
+                         'name': mineral['name'],
+                         'amount': '0'})
                 except:
                     return self.set_err(before_parse_json, i, 'minerals', 'Invalid mineral {0}'.format(mineral), meta_header)
 
