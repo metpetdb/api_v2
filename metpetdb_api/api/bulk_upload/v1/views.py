@@ -447,7 +447,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
             template_instance = class_()
         except:
             return Response(
-                data = {'error': 'Invalid template {0}'.format(template_name)},
+                data = {'error': 'invalid template'},
                 status=400
             )
 
@@ -498,7 +498,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
 
         else:
             return Response(
-                data = {'error': 'invalid template specified'},
+                data = {'error': 'invalid template'},
                 status = 400
             )
 

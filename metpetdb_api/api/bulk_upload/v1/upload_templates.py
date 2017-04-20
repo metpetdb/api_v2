@@ -55,7 +55,7 @@ class Template:
 
     def check_type(self, curr_row):
         errors = {}
-        header = curr_row[0]
+        header = list(map(lambda x: x.strip(), curr_row[0])) #strip blank spaces from headings
         for i in range(0,len(header)):
             if header[i] in self.types.keys():
                 # try to convert the field to the required type  
@@ -63,7 +63,7 @@ class Template:
                     try:
                         curr_row[1][i] = self.types[header[i]](curr_row[1][i])
                     except:
-                        errors[header[i]] = '{0} expected'.format(self.types[header[i]])
+                        errors[header[i]] = '{0} expected'.format(self.types[header[i]].__name__)
         return errors
 
     def check_data(self,curr_row):        
