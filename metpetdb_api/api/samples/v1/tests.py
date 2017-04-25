@@ -38,7 +38,9 @@ class SampleTests(APITestCase):
         )
 
         self.test_user_1 = User.objects.create_user(
-            email='lucien@metpetdb.com'
+            email='lucien@metpetdb.com',
+            password='lucien',
+            is_active=True
         )
 
         self.rock_type = RockType.objects.create(name=get_random_str())
@@ -96,7 +98,7 @@ class SampleTests(APITestCase):
         
         self.public_data_1 = dict(
             public_data = True,
-            owner = self.test_user_1,
+            #owner = self.test_user_1,
             number=get_random_str(),
             rock_type_id=str(self.rock_type.pk),
             aliases=[get_random_str() for i in range(5)],
@@ -121,7 +123,7 @@ class SampleTests(APITestCase):
 
         self.private_data_1 = dict(
             public_data=False,
-            owner = self.test_user_1,
+            #owner = self.test_user_1,
             number=get_random_str(),
             rock_type_id=str(self.rock_type.pk),
             aliases=[get_random_str() for i in range(5)],
@@ -177,12 +179,15 @@ class SampleTests(APITestCase):
                          sample_data)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         res_json = json.loads(res.content.decode('utf-8'))
+        #print(res_json)
 
         self.assertEqual(res_json['number'], updated_sample_number)
         self.assertEqual(
             set(mineral['id'] for mineral in res_json['minerals']),
             set(mineral['id'] for mineral in sample_data['minerals'])
         )
+
+    
 
 
     def test_superuser_can_edit_an_unowned_sample(self):
@@ -192,7 +197,7 @@ class SampleTests(APITestCase):
         )
 
         sample_data = deepcopy(self.sample_data)
-        print "Sample_data:",sample_data
+        #print("Sample_data: ",sample_data)
 
         res = client.post('/api/samples/', sample_data)
 
@@ -237,18 +242,58 @@ class SampleTests(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-    def test_test_user_1_can_filter_by_provenance_private(self):
+    def provenance_helper(self,client):
+        ##initializing first public data sample
+        public_data = deepcopy(self.public_data_1)
+        res = client.post('/api/samples/', public_data)
+
+        ##initializing first private data sample
+        private_data = deepcopy(self.private_data_1)
+        res = client.post('/api/samples/', private_data)
+    
+
+    def test_test_user_1_can_filter_by_provenance_public(self):
+        print("TEST user 1 is filtering by public provenance ")
         client = APIClient()
         client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.test_user_1.auth_token.key
         )
-        public_data = deepcopy(self.public_data_1)
-        res = client.get('/api/samples/',public_data)
-        print("res:",len(res))
-        pass
+        ##seeding test database
+        self.provenance_helper(client)
 
-    def test_test_user_1_can_filter_by_provenance_public(self):
-        pass
+        #searching with no argument (should return both.)
+        res = client.get('/api/samples/',{})
+        res_json_no = json.loads(res.content.decode('utf-8'))
+        self.assertEqual(2,res_json_no['count'])
+        
+
+    def test_test_user_1_can_filter_by_provenance_private(self):
+        print("TEST user 1 is filtering by private provenance ")
+        client = APIClient()
+        client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.test_user_1.auth_token.key
+        )
+        ##seeding test database
+        self.provenance_helper(client)
+
+        ##searching with private provenance argument (should return single private.)
+        res = client.get('/api/samples/',{"provenance":["Private"]})
+        res_json_private = json.loads(res.content.decode('utf-8'))
+        self.assertEqual(1,res_json_private['count'])
+        
 
     def test_test_user_1_can_filter_by_provenance_no_preference(self): 
-        pass
+        #unsure if these prints are necessary.
+        print("TEST user 1 is filtering by no provenance ")
+        client = APIClient()
+        client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.test_user_1.auth_token.key
+        )
+        ##seeding test database
+        self.provenance_helper(client)
+
+        ##searching with public provenance argument (should return single public.)
+        res = client.get('/api/samples/',{"provenance":["Public"]})
+        res_json_public = json.loads(res.content.decode('utf-8'))
+        self.assertEqual(1,res_json_public['count'])
+        
