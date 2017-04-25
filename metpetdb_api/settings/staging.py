@@ -46,13 +46,14 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'django_extensions',
-    'vendor.djoser.djoser',
+    'djoser',
     'legacy',
     'api',
     'apps',
     'apps.chemical_analyses',
     'apps.samples',
     'apps.users',
+    'apps.core',
 )
 
 MIDDLEWARE_CLASSES = (

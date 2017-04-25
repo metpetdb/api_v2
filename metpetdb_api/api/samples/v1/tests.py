@@ -99,11 +99,12 @@ class SampleTests(APITestCase):
 
         sample_data = deepcopy(self.sample_data)
 
-        res = client.post('/samples/', sample_data)
+        res = client.post('/api/samples/', sample_data)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         res_json = json.loads(res.content.decode('utf-8'))
 
         updated_sample_number = get_random_str()
+        print(updated_sample_number)
         sample_data['number'] = updated_sample_number
         sample_data.update(dict(
             minerals=[
@@ -118,7 +119,7 @@ class SampleTests(APITestCase):
             ]
         )),
 
-        res = client.put('/samples/{}/'.format(res_json['id']),
+        res = client.put('/api/samples/{}/'.format(res_json['id']),
                          sample_data)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         res_json = json.loads(res.content.decode('utf-8'))
@@ -138,10 +139,12 @@ class SampleTests(APITestCase):
 
         sample_data = deepcopy(self.sample_data)
 
-        res = client.post('/samples/', sample_data)
+        res = client.post('/api/samples/', sample_data)
         res_json = json.loads(res.content.decode('utf-8'))
 
-        sample_data['number'] = get_random_str()
+        updated_sample_number = get_random_str()
+
+        sample_data['number'] = updated_sample_number
         sample_data.update(dict(
             minerals=[
                 {
@@ -155,10 +158,11 @@ class SampleTests(APITestCase):
             ]
         )),
 
-        res = client.put('/samples/{}/'.format(res_json['id']),
+        res = client.put('/api/samples/{}/'.format(res_json['id']),
                          sample_data)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         res_json = json.loads(res.content.decode('utf-8'))
+
 
         self.assertEqual(res_json['number'], updated_sample_number)
         self.assertEqual(
@@ -173,5 +177,5 @@ class SampleTests(APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.inactive_user.auth_token.key
         )
 
-        res = client.post('/samples/', self.sample_data)
+        res = client.post('/api/samples/', self.sample_data)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
