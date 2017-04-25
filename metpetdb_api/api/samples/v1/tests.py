@@ -262,9 +262,9 @@ class SampleTests(APITestCase):
         self.provenance_helper(client)
 
         #searching with no argument (should return both.)
-        res = client.get('/api/samples/',{})
-        res_json_no = json.loads(res.content.decode('utf-8'))
-        self.assertEqual(2,res_json_no['count'])
+        res = client.get('/api/samples/',{"provenance":["Public"]})
+        res_json_public = json.loads(res.content.decode('utf-8'))
+        self.assertEqual(1,res_json_public['count'])
         
 
     def test_test_user_1_can_filter_by_provenance_private(self):
@@ -293,7 +293,30 @@ class SampleTests(APITestCase):
         self.provenance_helper(client)
 
         ##searching with public provenance argument (should return single public.)
-        res = client.get('/api/samples/',{"provenance":["Public"]})
-        res_json_public = json.loads(res.content.decode('utf-8'))
-        self.assertEqual(1,res_json_public['count'])
+        res = client.get('/api/samples/',{})
+        res_json_no = json.loads(res.content.decode('utf-8'))
+        self.assertEqual(2,res_json_no['count'])
         
+    def test_different_user_searching_provenance_of_other_user_gets_0_results(self):
+
+        print("test user is searching in superuser1's data, trying to find private data, by setting owner to .")
+        client = APIClient()
+        client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.superuser1.auth_token.key
+        )
+        ##seeding test database
+        self.provenance_helper(client)
+        res = client.get('/api/samples/',{"owner":[self.superuser1],"provenance":["Private"]})
+        res_json_private = json.loads(res.content.decode('utf-8'))
+        self.assertEqual(1,res_json_private['count'])
+
+        ##now new user should check
+        client = APIClient()
+        client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.test_user_1.auth_token.key
+        )
+
+        ##searching with private provenance on another user should return none
+        res = client.get('/api/samples/',{"owner":[self.superuser1],"provenance":["Private"]})
+        res_json_private = json.loads(res.content.decode('utf-8'))
+        self.assertEqual(0,res_json_private['count'])
