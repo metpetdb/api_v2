@@ -37,11 +37,11 @@ class Template:
 
     def check_line_len(self):
         data = self.data
-        if(len(data) == 0): 
+        if len(data) == 0:
             raise Exception("empty file")
 
         for i in range(1,len(data)):
-            if (len(data[i]) != len(data[i-1])):             
+            if len(data[i]) != len(data[i-1]):
                 raise Exception("inconsistent line length. Expected {0}, but was {1}".format(len(data[i-1]), len(data[i])))
     
     def check_required(self, row):
@@ -172,7 +172,7 @@ class SampleTemplate(Template):
     def __init__(self):
         complex_types = ["comment", "references", "mineral", "metamorphic_region_id", "metamorphic_grade"]
         required = ["number", "latitude", "longitude", "rock_type_name"]
-        types = {"comment": str}
+        types = {"comment": str, "latitude": float, 'longitude': float}
         db_types = ["minerals"]
         #selected_types = {'minerals': ['el1', 'el2', 'el3']}
         Template.__init__(self, complex_types, required, db_types, types)

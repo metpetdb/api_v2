@@ -303,10 +303,10 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(data=chemical_analyses_obj)
             try:
                 serializer.is_valid(raise_exception=True)
+                instance = self.perform_create(serializer)
             except Exception as e:
                 return self.set_err(before_parse_json, i, 'serialization', str(e), meta_header)
             
-            instance = self.perform_create(serializer)
 
             if chemical_analyses_obj.get('elements'):
                 for record in chemical_analyses_obj.get('elements'):
@@ -394,10 +394,10 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(data=sample_obj)
             try:
                 serializer.is_valid(raise_exception=True)
+                instance = self.perform_create(serializer)
             except Exception as e:
                 return self.set_err(before_parse_json, i, 'serialization', str(e), meta_header)
         
-            instance = self.perform_create(serializer)
         
             metamorphic_region_ids = sample_obj.get('metamorphic_region_id')
             metamorphic_grades = sample_obj.get('metamorphic_grade')           
