@@ -6,6 +6,7 @@ from api.users.v1.serializers import UserSerializer
 from apps.chemical_analyses.models import ChemicalAnalysis
 from apps.samples.models import (
     MetamorphicGrade,
+    GeoReference,
     MetamorphicRegion,
     RockType,
     Sample,
@@ -123,6 +124,10 @@ class MetamorphicRegionSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = MetamorphicRegion
 
+
+class GeoReferenceSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = GeoReference
 
 class RegionSerializer(DynamicFieldsModelSerializer):
     class Meta:

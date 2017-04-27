@@ -17,6 +17,7 @@ from api.samples.v1.serializers import (
     SubsampleSerializer,
     MetamorphicRegionSerializer,
     MetamorphicGradeSerializer,
+    GeoReferenceSerializer,
     SubsampleTypeSerializer,
 )
 from apps.chemical_analyses.models import ChemicalAnalysis
@@ -323,8 +324,8 @@ class MetamorphicGradeViewSet(viewsets.ModelViewSet):
 
 
 class GeoReferenceViewSet(viewsets.ModelViewSet):
-    queryset = MetamorphicRegion.objects.all()
-    serializer_class = MetamorphicRegionSerializer
+    queryset = GeoReference.objects.all()
+    serializer_class = GeoReferenceSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsSuperuserOrReadOnly,)
 
