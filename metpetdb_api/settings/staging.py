@@ -28,6 +28,14 @@ SECRET_KEY =  env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# Email Settings
+EMAIL_USE_TLS = env('EMAIL_USE_TLS')
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = env('EMAIL_PORT')
+
+
 ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'users.User'
@@ -160,3 +168,10 @@ USE_TZ = True
 
 STATIC_URL = '/api/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+
+DJOSER = {
+    'DOMAIN': env('FRONT_END_URL'),
+    'PASSWORD_RESET_CONFIRM_URL': 'reset-password#/{uid}/{token}',
+    'ACTIVATION_URL': 'login#/activate/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL' : True
+}
