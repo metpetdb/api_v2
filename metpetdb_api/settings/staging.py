@@ -46,7 +46,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'django_extensions',
-    'vendor.vendor.djoser',
+    'vendor.djsoer.djoser',
     'legacy',
     'api',
     'apps',
