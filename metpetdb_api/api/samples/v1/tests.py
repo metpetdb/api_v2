@@ -98,7 +98,6 @@ class SampleTests(APITestCase):
         
         self.public_data_1 = dict(
             public_data = True,
-            #owner = self.test_user_1,
             number=get_random_str(),
             rock_type_id=str(self.rock_type.pk),
             aliases=[get_random_str() for i in range(5)],
@@ -123,7 +122,6 @@ class SampleTests(APITestCase):
 
         self.private_data_1 = dict(
             public_data=False,
-            #owner = self.test_user_1,
             number=get_random_str(),
             rock_type_id=str(self.rock_type.pk),
             aliases=[get_random_str() for i in range(5)],
@@ -160,7 +158,6 @@ class SampleTests(APITestCase):
         res_json = json.loads(res.content.decode('utf-8'))
 
         updated_sample_number = get_random_str()
-        print(updated_sample_number)
         sample_data['number'] = updated_sample_number
         sample_data.update(dict(
             minerals=[
@@ -179,8 +176,7 @@ class SampleTests(APITestCase):
                          sample_data)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         res_json = json.loads(res.content.decode('utf-8'))
-        #print(res_json)
-
+        
         self.assertEqual(res_json['number'], updated_sample_number)
         self.assertEqual(
             set(mineral['id'] for mineral in res_json['minerals']),
@@ -197,7 +193,6 @@ class SampleTests(APITestCase):
         )
 
         sample_data = deepcopy(self.sample_data)
-        #print("Sample_data: ",sample_data)
 
         res = client.post('/api/samples/', sample_data)
 

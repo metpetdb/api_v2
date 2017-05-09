@@ -13,9 +13,9 @@ def sample_query(user, params, qs):
         qs = qs.filter(Q(owner=user) | Q(public_data=True))
 
     if params.get('provenance'):
-        if(params['provenance']=="Public"):
+        if params['provenance']=="Public":
             qs = qs.filter(Q(public_data=True))
-        elif(params['provenance'] == "Private"):
+        elif params['provenance'] == "Private":
             qs = qs.filter(Q(public_data=False))
 
 
