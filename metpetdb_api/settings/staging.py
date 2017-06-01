@@ -61,6 +61,7 @@ INSTALLED_APPS = (
     'apps.chemical_analyses',
     'apps.samples',
     'apps.users',
+    'apps.core',
 )
 
 MIDDLEWARE_CLASSES = (

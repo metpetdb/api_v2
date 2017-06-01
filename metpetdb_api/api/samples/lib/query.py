@@ -6,10 +6,18 @@ from django.db.models import Q
 
 
 def sample_query(user, params, qs):
+    
     if isinstance(user, AnonymousUser):
         qs = qs.filter(public_data=True)
     else:
         qs = qs.filter(Q(owner=user) | Q(public_data=True))
+
+    if params.get('provenance'):
+        if params['provenance']=="Public":
+            qs = qs.filter(Q(public_data=True))
+        elif params['provenance'] == "Private":
+            qs = qs.filter(Q(public_data=False))
+
 
     if params.get('ids'):
         qs = qs.filter(pk__in=params['ids'].split(','))
