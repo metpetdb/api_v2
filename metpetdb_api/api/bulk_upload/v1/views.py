@@ -231,20 +231,31 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         return serializer.save()
 
-    def set_err(self, JSON, i, field, val, meta_header):
-            JSON[i]['errors'][field] = val
-            JSON.append({"meta_header": meta_header})   
-            return Response(
-                data = JSON,
-                status = 400
-            )
+    
+    def rollback_transaction(self):
+        transaction.rollback()
+        transaction.set_autocommit(True)
 
+    def set_err(self, JSON, i, field, val, meta_header):
+        self.rollback_transaction()
+        JSON[i]['errors'][field] = val
+        JSON.append({"meta_header": meta_header})   
+        return Response(
+            data = JSON,
+            status = 400
+        )
+    
     def parse_chemical_analyses(self, request, JSON, meta_header):
         before_parse_json = list(JSON)
+        
+        # Manual transaction for ease of exception handling
+        transaction.set_autocommit(False)
+        
         for i,chemical_analyses_obj in enumerate(JSON):
             try:
                 chemical_analyses_obj['owner'] = request.data.get('owner')    
             except:
+                self.rollback_transaction()
                 return Response(
                     data = {'error': 'missing owner in header'},
                     status = 400
@@ -342,17 +353,25 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
 
         headers = self.get_success_headers(serializer.data)
         JSON.append({"meta_header": meta_header})
+        
+        transaction.commit()
+        transaction.set_autocommit(True)
+        
         return Response(JSON,
                         status=status.HTTP_201_CREATED,
                         headers=headers)
-
+    
     def parse_samples(self, request, JSON, meta_header):
         before_parse_json = list(JSON)
+
+        # Set transactions manually to allow for ease of exception handling
+        transaction.set_autocommit(False)
 
         for i,sample_obj in enumerate(JSON):
             try:
                 sample_obj['owner'] = request.data.get('owner')
             except:
+                self.rollback_transaction() 
                 return Response(
                     data = {'error' : 'Missing owner in header'},
                     status = 400
@@ -429,11 +448,14 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
 
         JSON.append({"meta_header": meta_header})    
         headers = self.get_success_headers(serializer.data)
+        
+        transaction.commit()
+        transaction.set_autocommit(True)
+        
         return Response(JSON,
                         status=status.HTTP_201_CREATED,
                         headers=headers)       
 
-    @transaction.atomic
     def create(self, request, *args, **kwargs):
         url = request.data.get('url')
         JSON = request.data.get('json')
