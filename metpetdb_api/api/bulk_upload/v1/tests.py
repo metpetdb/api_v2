@@ -1,6 +1,6 @@
 import json
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APIClient, APITransactionTestCase
 
 from apps.users.models import User
 
@@ -17,7 +17,7 @@ from apps.chemical_analyses.models import(
     Oxide,
 )
 
-class BulkUploadTests(APITestCase):
+class BulkUploadTests(APITransactionTestCase):
     """
     Bulk upload error classes are documented in the wiki: 
     https://github.com/metpetdb/api_v2/wiki/Bulk-Upload
