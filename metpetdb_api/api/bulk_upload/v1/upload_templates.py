@@ -32,7 +32,7 @@ class Template:
         self.required = required 
         self.db_types = db_types
         self.data = ''
-        self.amounts = {'mineral', 'element', 'oxide'}
+        self.amounts = {'element', 'oxide'}
         self.types = types
 
     def check_line_len(self):
@@ -119,7 +119,11 @@ class Template:
                     amount = self.get_amount(data,i,j)
                     tmp_result.set_field_complex(heading, {"name": name, "amount": amount})
                     continue
-                                   
+
+                if heading == 'mineral' and heading not in self.amounts:
+                    tmp_result.set_field_complex(heading, {"name": data[i][j]})
+                    continue
+
                 field = data[i][j]
                 if self.is_complex(heading):
                     tmp_result.set_field_complex(heading,field)
@@ -176,6 +180,7 @@ class SampleTemplate(Template):
         db_types = ["minerals"]
         #selected_types = {'minerals': ['el1', 'el2', 'el3']}
         Template.__init__(self, complex_types, required, db_types, types)
+        self.amounts.add('mineral')
    
     def check_amounts(self,header):
         pass

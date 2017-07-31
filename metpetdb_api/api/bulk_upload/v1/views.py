@@ -264,7 +264,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
             #fix date formatting
             if chemical_analyses_obj['analysis_date']:
                 chemical_analyses_obj['analysis_date'] += 'T00:00:00.000Z'
-            
+
             try:
                 chemical_analyses_obj['mineral_id'] = Mineral.objects.get(name=chemical_analyses_obj['mineral'][0]['name']).id
             
@@ -291,7 +291,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
             chemical_analyses_obj['elements'] = elements_to_add
 
             oxides_to_add = []
-            
+
             for oxide in chemical_analyses_obj['oxide']:
                 try:
                     oxides_to_add.append(
