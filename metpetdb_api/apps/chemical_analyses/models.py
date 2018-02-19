@@ -37,6 +37,7 @@ class ChemicalAnalysis(models.Model):
 
     class Meta:
         db_table = 'chemical_analyses'
+        ordering = ['id']
 
 
 class Element(models.Model):
@@ -50,6 +51,7 @@ class Element(models.Model):
 
     class Meta:
         db_table = 'elements'
+        ordering = ['id']
 
 
 class Oxide(models.Model):
@@ -64,6 +66,7 @@ class Oxide(models.Model):
 
     class Meta:
         db_table = 'oxides'
+        ordering = ['id']
 
 
 class ChemicalAnalysisElement(models.Model):

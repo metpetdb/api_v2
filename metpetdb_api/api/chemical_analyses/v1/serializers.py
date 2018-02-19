@@ -73,6 +73,7 @@ class ChemicalAnalysisSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = ChemicalAnalysis
         depth = 1
+        fields = '__all__'
 
     def is_valid(self, raise_exception=False):
         super().is_valid(raise_exception)
@@ -119,8 +120,10 @@ class ChemicalAnalysisSerializer(DynamicFieldsModelSerializer):
 class ElementSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Element
+        fields = '__all__'
 
 
 class OxideSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Oxide
+        fields = '__all__'

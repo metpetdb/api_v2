@@ -30,11 +30,13 @@ SUBSAMPLE_FIELDS = ('name')
 class RockTypeSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = RockType
+        fields = '__all__'
 
 
 class MineralSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Mineral
+        fields = '__all__'
 
 
 class SampleMineralSerializer(DynamicFieldsModelSerializer):
@@ -60,6 +62,7 @@ class SampleSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Sample
         depth = 1
+        fields = '__all__'
 
     def is_valid(self, raise_exception=False):
         super().is_valid(raise_exception)
@@ -111,6 +114,7 @@ class SubsampleSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Subsample
         depth = 1
+        fields = '__all__'
 
     def is_valid(self, raise_exception=False):
         super().is_valid(raise_exception)
@@ -154,32 +158,40 @@ class SubsampleTypeSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = SubsampleType
         depth = 1
+        fields = '__all__'
 
 
 class MetamorphicGradeSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = MetamorphicGrade
+        fields = '__all__'
 
 
 class MetamorphicRegionSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = MetamorphicRegion
+        fields = '__all__'
 
 
 class GeoReferenceSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = GeoReference
+        fields = '__all__'
+
 
 class RegionSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Region
+        fields = '__all__'
 
 
 class ReferenceSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Reference
+        fields = '__all__'
 
 
 class CollectorSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Collector
+        fields = '__all__'
