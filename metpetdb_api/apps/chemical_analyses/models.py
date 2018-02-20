@@ -1,6 +1,6 @@
 import uuid
-from concurrency.fields import AutoIncVersionField
 
+from concurrency.fields import AutoIncVersionField
 from django.conf import settings
 from django.contrib.gis.db import models
 

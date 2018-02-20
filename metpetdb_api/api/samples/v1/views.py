@@ -49,7 +49,6 @@ class SampleViewSet(viewsets.ModelViewSet):
             kwargs['partial'] = True
         return super().get_serializer(*args, **kwargs)
 
-
     def list(self, request, *args, **kwargs):
         params = request.query_params
 
@@ -81,7 +80,6 @@ class SampleViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
-
     def _handle_metamorphic_regions(self, instance, ids):
         metamorphic_regions = []
         for id in ids:
@@ -94,7 +92,6 @@ class SampleViewSet(viewsets.ModelViewSet):
                 metamorphic_regions.append(metamorphic_region)
         instance.metamorphic_regions = metamorphic_regions
 
-
     def _handle_metamorphic_grades(self, instance, ids):
         metamorphic_grades = []
         for id in ids:
@@ -105,7 +102,6 @@ class SampleViewSet(viewsets.ModelViewSet):
             else:
                 metamorphic_grades.append(metamorphic_grade)
         instance.metamorphic_grades = metamorphic_grades
-
 
     def _handle_minerals(self, instance, minerals):
         to_add = []
@@ -122,7 +118,6 @@ class SampleViewSet(viewsets.ModelViewSet):
             SampleMineral.objects.create(sample=instance,
                                          mineral=record['mineral'],
                                          amount=record['amount'])
-
 
     def _handle_references(self, instance, references):
         to_add = []
@@ -197,7 +192,6 @@ class SampleViewSet(viewsets.ModelViewSet):
         return Response(serializer.data,
                         status=status.HTTP_201_CREATED,
                         headers=headers)
-
 
     def update(self, request, *args, **kwargs):
         params = request.data
@@ -286,7 +280,6 @@ class SubsampleViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
-
     def perform_create(self, serializer):
         return serializer.save()
 
@@ -323,7 +316,6 @@ class SubsampleViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    
 
 class SubsampleTypeViewSet(viewsets.ModelViewSet):
     queryset = SubsampleType.objects.all()

@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from api.lib.serializers import DynamicFieldsModelSerializer
 from api.users.v1.serializers import UserSerializer
+from api.images.v1.serializers import ImageSerializer
 
 from apps.chemical_analyses.models import ChemicalAnalysis
 from apps.samples.models import (
@@ -23,7 +24,7 @@ from apps.users.models import User
 SAMPLE_FIELDS = ('number', 'aliases', 'collection_date', 'description',
                  'location_name', 'location_coords', 'location_error',
                  'date_precision', 'country', 'regions', 'collector_name',
-                 'collector_id', 'sesar_number',)
+                 'collector_id', 'sesar_number', 'image')
 
 SUBSAMPLE_FIELDS = ('name')
 
@@ -54,6 +55,8 @@ class SampleSerializer(DynamicFieldsModelSerializer):
     minerals = SampleMineralSerializer(source='samplemineral_set',
                                        many=True)
     owner = UserSerializer(read_only=True)
+
+    images = ImageSerializer(many=True, read_only=True)
 
     # TODO: figure out if there is a better, more efficient way to do this
     subsample_ids = serializers.SerializerMethodField()
@@ -88,7 +91,6 @@ class SampleSerializer(DynamicFieldsModelSerializer):
         instance = super().create(validated_data)
         return instance
 
-
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             if attr in SAMPLE_FIELDS:
@@ -110,6 +112,7 @@ class SampleSerializer(DynamicFieldsModelSerializer):
 class SubsampleSerializer(DynamicFieldsModelSerializer):
     sample = SampleSerializer(read_only=True)
     owner = UserSerializer(read_only=True)
+    images = ImageSerializer(many=True, read_only=True)
     
     class Meta:
         model = Subsample
