@@ -174,6 +174,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
 DJOSER = {
     'DOMAIN': env('FRONT_END_URL'),
+    'SITE_NAME': env('FRONT_END_SITE_NAME'),
     'PASSWORD_RESET_CONFIRM_URL': 'reset-password#/{uid}/{token}',
     'ACTIVATION_URL': 'login#/activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL' : True
