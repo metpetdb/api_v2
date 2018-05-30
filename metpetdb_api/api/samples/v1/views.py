@@ -1,6 +1,8 @@
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.settings import api_settings
+from rest_framework_csv import renderers as r
 
 from api.chemical_analyses.lib.query import chemical_analysis_query
 from api.lib.permissions import IsOwnerOrReadOnly, IsSuperuserOrReadOnly
@@ -73,11 +75,14 @@ class SampleViewSet(viewsets.ModelViewSet):
 
         qs = sample_qs_optimizer(params, qs)
 
-        page = self.paginate_queryset(qs)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
+        # if we're requesting CSV, don't bother with pagination
+        if params.get('format') == 'csv':
+            renderer_classes = (r.CSVRenderer,)
+        else:
+            page = self.paginate_queryset(qs)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
