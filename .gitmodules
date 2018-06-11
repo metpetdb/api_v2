@@ -1,3 +1,3 @@
 [submodule "metpetdb_api/vendor/djoser"]
 	path = metpetdb_api/vendor/djoser
-	url = https://github.com/kristallizer/djoser.git
+	url = https://github.com/IreLynn/djoser.git
