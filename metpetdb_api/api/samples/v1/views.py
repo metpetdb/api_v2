@@ -73,13 +73,17 @@ class SampleViewSet(viewsets.ModelViewSet):
 
         qs = sample_qs_optimizer(params, qs)
 
-        page = self.paginate_queryset(qs)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        if params.get('format') == 'csv':
+            serializer = self.get_serializer(qs, many=True)
+            return Response(serializer.data)
+        else:
+            page = self.paginate_queryset(qs)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(qs, many=True)
-        return Response(serializer.data)
+            serializer = self.get_serializer(qs, many=True)
+            return Response(serializer.data)
 
 
     def _handle_metamorphic_regions(self, instance, ids):
