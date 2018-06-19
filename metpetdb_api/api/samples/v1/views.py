@@ -19,6 +19,7 @@ from api.samples.v1.serializers import (
     MetamorphicGradeSerializer,
     GeoReferenceSerializer,
     SubsampleTypeSerializer,
+    SampleSearchSerializer,
 )
 from apps.chemical_analyses.models import ChemicalAnalysis
 from apps.samples.models import (
@@ -426,3 +427,9 @@ class SampleOwnerNamesView(APIView):
             .distinct()
         )
         return Response({'sample_owner_names': sample_owner_names})
+
+
+class SampleSearchView(SampleViewSet):
+    serializer_class = SampleSearchSerializer
+    def get_serializer(self, *args, **kwargs):
+        return super().get_serializer(*args,**kwargs)

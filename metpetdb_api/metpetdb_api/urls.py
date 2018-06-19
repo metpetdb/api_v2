@@ -42,6 +42,7 @@ from api.samples.v1.views import (
     SampleNumbersView,
     CountryNamesView,
     SampleOwnerNamesView,
+    SampleSearchView,
 )
 from api.users.v1.views import UserViewSet
 
@@ -65,6 +66,9 @@ router.register(r'regions', RegionViewSet)
 router.register(r'references', ReferenceViewSet)
 router.register(r'collectors', CollectorViewSet)
 router.register(r'bulk_upload', BulkUploadViewSet)
+
+router.register(r'search/samples', SampleSearchView)
+
 
 urlpatterns = [
     url(r'^api/', include(router.urls)),

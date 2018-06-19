@@ -246,9 +246,8 @@ class SampleSearchSerializer(SampleSerializer):
         return obj.metamorphic_grades.name
 
     def get_Minerals(self,obj):
-        all_mins = obj.samplemineral_set.all()
         minerals = []
-        for m in all_mins:
+        for m in obj.samplemineral_set.all():
             minerals.append(m.mineral.name)
         return minerals
 
