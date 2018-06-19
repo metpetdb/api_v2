@@ -213,10 +213,10 @@ class SampleSearchSerializer(SampleSerializer):
         return obj.description
 
     def get_Latitude(self,obj):
-        return obj.location_coords[0]
+        return obj.location_coords[1]
 
     def get_Longitude(self,obj):
-        return obj.location_coords[1]
+        return obj.location_coords[0]
 
     def get_Location_Error(self,obj):
         return obj.location_error
