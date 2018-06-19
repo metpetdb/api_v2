@@ -2,7 +2,7 @@ import json
 
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.gis.geos import Polygon, GEOSException
-from django.db.models import Q
+from django.db.models import Q, F
 
 
 def sample_query(user, params, qs):
@@ -91,5 +91,8 @@ def sample_query(user, params, qs):
 
     if params.get('sesar_number'):
         qs = qs.filter(sesar_number__in=params['sesar_number'].split(','))
+
+    if params.get('ordering'):
+        qs = qs.order_by(params['ordering'])
 
     return qs
