@@ -1,6 +1,8 @@
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.settings import api_settings
+from rest_framework_csv import renderers as r
 
 from api.chemical_analyses.lib.query import chemical_analysis_query
 from api.lib.permissions import IsOwnerOrReadOnly, IsSuperuserOrReadOnly
@@ -82,7 +84,6 @@ class SampleViewSet(viewsets.ModelViewSet):
             if page is not None:
                 serializer = self.get_serializer(page, many=True)
                 return self.get_paginated_response(serializer.data)
-
             serializer = self.get_serializer(qs, many=True)
             return Response(serializer.data)
 
