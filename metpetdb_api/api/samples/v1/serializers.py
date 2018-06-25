@@ -51,7 +51,15 @@ class SampleMineralSerializer(DynamicFieldsModelSerializer):
 class SampleSerializer(DynamicFieldsModelSerializer):
     minerals = SampleMineralSerializer(source='samplemineral_set',
                                        many=True)
-    owner = UserSerializer(read_only=True)
+    # owner = UserSerializer(read_only=True)
+    owner = serializers.SerializerMethodField(read_only=True)
+    rock_type = serializers.SerializerMethodField(read_only=True)
+    metamorphic_grades = serializers.SerializerMethodField(read_only=True)
+    metamorphic_regions = serializers.SerializerMethodField(read_only=True)
+    minerals = serializers.SerializerMethodField(read_only=True)
+    references = serializers.SerializerMethodField(read_only=True)
+    latitude = serializers.SerializerMethodField(read_only=True)
+    longitude = serializers.SerializerMethodField(read_only=True)
 
     # TODO: figure out if there is a better, more efficient way to do this
     subsample_ids = serializers.SerializerMethodField()
@@ -60,6 +68,26 @@ class SampleSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Sample
         depth = 1
+        fields = (
+            'number',
+            'owner',
+            'regions',
+            'country',
+            'rock_type',
+            'metamorphic_grades',
+            'metamorphic_regions',
+            'minerals',
+            'references',
+            'longitude',
+            'latitude',
+            # 'igsn',
+            'collector_name',
+            'collection_date',
+            'location_name',
+            'description',
+            'subsample_ids',
+            'chemical_analyses_ids',
+            )
 
     def is_valid(self, raise_exception=False):
         super().is_valid(raise_exception)
@@ -94,9 +122,44 @@ class SampleSerializer(DynamicFieldsModelSerializer):
 
         return instance
 
+    def get_owner(self,obj):
+        return obj.owner.name
+
+    def get_rock_type(self,obj):
+        return obj.rock_type.name
+
+    def get_metamorphic_grades(self,obj):
+        grades = []
+        for g in obj.metamorphic_grades.all():
+            grades.append(g.name)
+        return grades
+
+    def get_metamorphic_regions(self,obj):
+        regions = []
+        for r in obj.metamorphic_regions.all():
+            regions.append(r.name)
+        return regions
+
+    def get_minerals(self,obj):
+        minerals = []
+        for m in obj.samplemineral_set.all():
+            minerals.append(m.mineral.name)
+        return minerals
+
+    def get_references(self,obj):
+        references = []
+        for r in obj.references.all():
+            references.append(r.name)
+        return references
+
+    def get_longitude(self,obj):
+        return round(obj.location_coords[0],5)
+
+    def get_latitude(self,obj):
+        return round(obj.location_coords[1],5)
+
     def get_subsample_ids(self, obj):
-        return Subsample.objects.filter(sample_id=obj.pk).values_list('id',
-                                                                      flat=True)
+        return Subsample.objects.filter(sample_id=obj.pk).values_list('id', flat=True)
 
     def get_chemical_analyses_ids(self, obj):
         subsample_ids = obj.subsamples.values_list('id', flat=True)
