@@ -1,8 +1,8 @@
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_csv import renderers as r
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
+from api.samples.v1.renderers import SampleCSVRenderer
 
 from api.chemical_analyses.lib.query import chemical_analysis_query
 from api.lib.permissions import IsOwnerOrReadOnly, IsSuperuserOrReadOnly
@@ -40,10 +40,10 @@ from apps.samples.models import (
     SubsampleType,
 )
 
-
 class SampleViewSet(viewsets.ModelViewSet):
     queryset = Sample.objects.all()
     serializer_class = SampleSerializer
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, SampleCSVRenderer)
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,)
 
@@ -430,6 +430,7 @@ class SampleOwnerNamesView(APIView):
         )
         return Response({'sample_owner_names': sample_owner_names})
 
+'''
 class SampleCSVRenderer (r.CSVRenderer):
     header = ['Sample', 'Rock_Type', 'Comment', 'Latitude', 'Longitude', 'Location_Error', 'Region', 'Country', 'Collector', 'Date_of_Collection', 'Present_Sample_Location', 'Reference', 'Metamorphic_Grade', 'Minerals', 'Subsamples', 'Chemical_Analyses']
     labels = {
@@ -450,6 +451,9 @@ class SampleCSVRenderer (r.CSVRenderer):
         'Subsamples': 'Number of Subsamples',
         'Chemical_Analyses': 'Number of Chemical Analyses'
     }
+
+'''
+
 
 class SampleSearchView(SampleViewSet):
     serializer_class = SampleSearchSerializer
