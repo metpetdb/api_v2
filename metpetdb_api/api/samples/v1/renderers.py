@@ -5,16 +5,15 @@ class SampleCSVRenderer (r.CSVRenderer):
     header = ['number',
             'rock_type',
             'description',
-            'longitude',
             'latitude',
-            'regions',
-            # 'metamorphic_regions',
+            'longitude',
+            'location_error',
             'country',
             'collector_name',
             'collection_date',
             'location_name',
-            'references',
-            'metamorphic_grades',
+            'references.0',
+            'metamorphic_grades.0',
             'minerals',
             # 'igsn',
             # 'subsample_ids',
@@ -26,19 +25,19 @@ class SampleCSVRenderer (r.CSVRenderer):
         'description': 'Comment', 
         'latitude': 'Latitude', 
         'longitude': 'Longitude', 
-        # 'Location_Error': 'Location Error',
-        'regions': 'Region', 
-        'metamorphic_regions': 'Region',
+        'location_error': 'Location Error', 
         'country': 'Country', 
         'collector_name': 'Collector', 
         'collection_date': 'Date of Collection', 
         'location_name': 'Present Sample Location', 
-        'references': 'Reference', 
-        'metamorphic_grades': 'Metamorphic Grade', 
+        'references.0': 'Reference', 
+        'metamorphic_grades.0': 'Metamorphic Grade', 
         'minerals': 'Mineral',
         # 'Subsamples': 'Number of Subsamples',
         # 'Chemical_Analyses': 'Number of Chemical Analyses'
     }
+
+    num_regions = 0
 
     def tablize(self, data, header=None, labels=None):
         if data:
@@ -51,6 +50,12 @@ class SampleCSVRenderer (r.CSVRenderer):
             if 'minerals' in header:
                 data = tuple(data)
                 header.remove('minerals')
+                region_headers = []
+                for i in range(self.num_regions):
+                    region_headers.append('regions.' + str(i))
+                    labels[region_headers[-1]] = 'Region'
+                header[6:6] = region_headers
+
 
             if labels:
                 yield [labels.get(x,x) for x in header]
@@ -72,8 +77,8 @@ class SampleCSVRenderer (r.CSVRenderer):
 
     def flatten_data(self,data):
         for item in data:
-            self.handle_minerals(item)
             self.handle_regions(item)
+            self.handle_minerals(item)
             # print(item)
             flat_item = self.flatten_item(item)
             # print(flat_item)
@@ -90,7 +95,9 @@ class SampleCSVRenderer (r.CSVRenderer):
         item['regions'].extend(item['metamorphic_regions'])
         for r in item['regions']:
             regions.append(r.title())
-        item['regions'] = list(set(regions))
+        item['regions'] = list(set(regions))  # lol
+        # lol again
+        self.num_regions = max(self.num_regions,len(item['regions']))
 
     def flatten_item(self, item):
         if isinstance(item, list):
@@ -101,7 +108,3 @@ class SampleCSVRenderer (r.CSVRenderer):
             flat_item = {'': item}
 
         return flat_item
-
-    def flatten_list(self, l):
-        flat_list = {'': ', '.join(l)}
-        return flat_list

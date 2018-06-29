@@ -80,6 +80,7 @@ class SampleSerializer(DynamicFieldsModelSerializer):
             'references',
             'longitude',
             'latitude',
+            'location_error',
             # 'igsn',
             'collector_name',
             'collection_date',
