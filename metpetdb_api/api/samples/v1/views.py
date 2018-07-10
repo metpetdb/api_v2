@@ -21,7 +21,6 @@ from api.samples.v1.serializers import (
     MetamorphicGradeSerializer,
     GeoReferenceSerializer,
     SubsampleTypeSerializer,
-    SampleSearchSerializer,
 )
 from apps.chemical_analyses.models import ChemicalAnalysis
 from apps.samples.models import (
@@ -452,7 +451,6 @@ class SampleCSVRenderer (r.CSVRenderer):
         'Chemical_Analyses': 'Number of Chemical Analyses'
     }
 
-'''
 
 
 class SampleSearchView(SampleViewSet):
@@ -496,3 +494,4 @@ class SampleSearchView(SampleViewSet):
 
             serializer = self.get_serializer(qs, many=True)
             return Response(serializer.data)
+'''

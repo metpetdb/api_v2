@@ -12,8 +12,8 @@ class SampleCSVRenderer (r.CSVRenderer):
             'collector_name',
             'collection_date',
             'location_name',
-            'references.0',
-            'metamorphic_grades.0',
+            # 'references.0',
+            # 'metamorphic_grades.0',
             'minerals',
             # 'igsn',
             # 'subsample_ids',
@@ -30,14 +30,16 @@ class SampleCSVRenderer (r.CSVRenderer):
         'collector_name': 'Collector', 
         'collection_date': 'Date of Collection', 
         'location_name': 'Present Sample Location', 
-        'references.0': 'Reference', 
-        'metamorphic_grades.0': 'Metamorphic Grade', 
+        # 'references.0': 'Reference', 
+        # 'metamorphic_grades.0': 'Metamorphic Grade', 
         'minerals': 'Mineral',
         # 'Subsamples': 'Number of Subsamples',
         # 'Chemical_Analyses': 'Number of Chemical Analyses'
     }
 
     num_regions = 0
+    num_refs = 0
+    num_grades = 0
 
     def tablize(self, data, header=None, labels=None):
         if data:
@@ -55,6 +57,18 @@ class SampleCSVRenderer (r.CSVRenderer):
                     region_headers.append('regions.' + str(i))
                     labels[region_headers[-1]] = 'Region'
                 header[6:6] = region_headers
+                ref_headers = []
+                for i in range(self.num_refs):
+                    ref_headers.append('references.' + str(i))
+                    labels[ref_headers[-1]] = 'Reference'
+                offset = 10 + self.num_regions
+                header[offset:offset] = ref_headers
+                grade_headers = []
+                for i in range(self.num_grades):
+                    grade_headers.append('metamorphic_grades.' + str(i))
+                    labels[grade_headers[-1]] = 'Metamorphic Grade'
+                offset += self.num_refs
+                header[offset:offset] = grade_headers
 
 
             if labels:
@@ -79,6 +93,8 @@ class SampleCSVRenderer (r.CSVRenderer):
         for item in data:
             self.handle_regions(item)
             self.handle_minerals(item)
+            self.handle_references(item)
+            self.handle_meta_grades(item)
             # print(item)
             flat_item = self.flatten_item(item)
             # print(flat_item)
@@ -90,14 +106,25 @@ class SampleCSVRenderer (r.CSVRenderer):
             if m not in self.header:
                 self.header.append(m)
 
-    def handle_regions(self, item):
-        regions = []
-        item['regions'].extend(item['metamorphic_regions'])
+    def handle_regions(self,item):
+        regions = set()
         for r in item['regions']:
-            regions.append(r.title())
-        item['regions'] = list(set(regions))  # lol
-        # lol again
-        self.num_regions = max(self.num_regions,len(item['regions']))
+            regions.add(r.title())
+        for r in item['metamorphic_regions']:
+            regions.add(r.title())
+        self.num_regions = max(self.num_regions,len(regions))
+
+    def handle_references(self,item):
+        refs = set()
+        for r in item['references']:
+            refs.add(r)
+        self.num_refs = max(self.num_refs, len(refs))
+
+    def handle_meta_grades(self,item):
+        grades = set()
+        for g in item['metamorphic_grades']:
+            grades.add(g.title())
+        self.num_grades = max(self.num_grades, len(grades))
 
     def flatten_item(self, item):
         if isinstance(item, list):
