@@ -60,6 +60,7 @@ class SampleSerializer(DynamicFieldsModelSerializer):
     references = serializers.SerializerMethodField(read_only=True)
     latitude = serializers.SerializerMethodField(read_only=True)
     longitude = serializers.SerializerMethodField(read_only=True)
+    collection_date = serializers.SerializerMethodField(read_only=True)
 
     # TODO: figure out if there is a better, more efficient way to do this
     subsample_ids = serializers.SerializerMethodField()
@@ -158,6 +159,13 @@ class SampleSerializer(DynamicFieldsModelSerializer):
 
     def get_latitude(self,obj):
         return round(obj.location_coords[1],5)
+
+    def get_collection_date(self,obj):
+        # print(obj.collection_date)
+        date = str(obj.collection_date).split(' ')[0]
+        if date == 'None':
+            return ''
+        return date
 
     def get_subsample_ids(self, obj):
         return Subsample.objects.filter(sample_id=obj.pk).values_list('id', flat=True)
