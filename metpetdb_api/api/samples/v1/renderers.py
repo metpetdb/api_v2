@@ -40,6 +40,7 @@ class SampleCSVRenderer (r.CSVRenderer):
     num_regions = 0
     num_refs = 0
     num_grades = 0
+    minerals = set()
 
     def tablize(self, data, header=None, labels=None):
         if data:
@@ -69,7 +70,9 @@ class SampleCSVRenderer (r.CSVRenderer):
                     labels[grade_headers[-1]] = 'Metamorphic Grade'
                 offset += self.num_refs
                 header[offset:offset] = grade_headers
-
+                mins = list(self.minerals)
+                mins.sort()
+                header.extend(mins)
 
             if labels:
                 yield [labels.get(x,x) for x in header]
@@ -103,8 +106,7 @@ class SampleCSVRenderer (r.CSVRenderer):
     def handle_minerals(self,item):
         for m in item['minerals']:
             item[m] = 'x'
-            if m not in self.header:
-                self.header.append(m)
+            self.minerals.add(m)
 
     def handle_regions(self,item):
         regions = set()
@@ -126,12 +128,12 @@ class SampleCSVRenderer (r.CSVRenderer):
             grades.add(g.title())
         self.num_grades = max(self.num_grades, len(grades))
 
-    def flatten_item(self, item):
-        if isinstance(item, list):
-            flat_item = self.flatten_list(item)
-        elif isinstance(item, dict):
-            flat_item = self.flatten_dict(item)
-        else:
-            flat_item = {'': item}
+    # def flatten_item(self, item):
+    #     if isinstance(item, list):
+    #         flat_item = self.flatten_list(item)
+    #     elif isinstance(item, dict):
+    #         flat_item = self.flatten_dict(item)
+    #     else:
+    #         flat_item = {'': item}
 
-        return flat_item
+    #     return flat_item
