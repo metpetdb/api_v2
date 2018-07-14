@@ -131,28 +131,16 @@ class SampleSerializer(DynamicFieldsModelSerializer):
         return obj.rock_type.name
 
     def get_metamorphic_grades(self,obj):
-        grades = []
-        for g in obj.metamorphic_grades.all():
-            grades.append(g.name)
-        return grades
+        return [g.name for g in obj.metamorphic_grades.all()]
 
     def get_metamorphic_regions(self,obj):
-        regions = []
-        for r in obj.metamorphic_regions.all():
-            regions.append(r.name)
-        return regions
+        return [r.name for r in obj.metamorphic_regions.all()]
 
     def get_minerals(self,obj):
-        minerals = []
-        for m in obj.samplemineral_set.all():
-            minerals.append(m.mineral.name)
-        return minerals
+        return [m.mineral.name for m in obj.samplemineral_set.all()]
 
     def get_references(self,obj):
-        references = []
-        for r in obj.references.all():
-            references.append(r.name)
-        return references
+        return [r.name for r in obj.references.all()]
 
     def get_longitude(self,obj):
         return round(obj.location_coords[0],5)
@@ -163,9 +151,7 @@ class SampleSerializer(DynamicFieldsModelSerializer):
     def get_collection_date(self,obj):
         # print(obj.collection_date)
         date = str(obj.collection_date).split(' ')[0]
-        if date == 'None':
-            return ''
-        return date
+        return '' if date == 'None' else date
 
     def get_subsample_ids(self, obj):
         return Subsample.objects.filter(sample_id=obj.pk).values_list('id', flat=True)

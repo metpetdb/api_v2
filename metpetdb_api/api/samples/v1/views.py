@@ -80,7 +80,7 @@ class SampleViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         else:
             page = self.paginate_queryset(qs)
-            if page is not None:
+            if page:
                 serializer = self.get_serializer(page, many=True)
                 return self.get_paginated_response(serializer.data)
 

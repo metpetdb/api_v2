@@ -2,45 +2,47 @@ from rest_framework_csv import renderers as r
 
 
 class SampleCSVRenderer (r.CSVRenderer):
-    header = ['number',
-            'rock_type',
-            'description',
-            'latitude',
-            'longitude',
-            'location_error',
-            'country',
-            'collector_name',
-            'collection_date',
-            'location_name',
-            # 'references.0',
-            # 'metamorphic_grades.0',
-            'minerals',
-            # 'igsn',
-            # 'subsample_ids',
-            # 'chemical_analyses_ids',
-            ]
-    labels = {
-        'number': 'Sample', 
-        'rock_type': 'Rock Type', 
-        'description': 'Comment', 
-        'latitude': 'Latitude', 
-        'longitude': 'Longitude', 
-        'location_error': 'Location Error', 
-        'country': 'Country', 
-        'collector_name': 'Collector', 
-        'collection_date': 'Date of Collection', 
-        'location_name': 'Present Sample Location', 
-        # 'references.0': 'Reference', 
-        # 'metamorphic_grades.0': 'Metamorphic Grade', 
-        'minerals': 'Mineral',
-        # 'Subsamples': 'Number of Subsamples',
-        # 'Chemical_Analyses': 'Number of Chemical Analyses'
-    }
 
-    num_regions = 0
-    num_refs = 0
-    num_grades = 0
-    minerals = set()
+    def __init__(self):
+        self.header = ['number',
+                'rock_type',
+                'description',
+                'latitude',
+                'longitude',
+                'location_error',
+                'country',
+                'collector_name',
+                'collection_date',
+                'location_name',
+                # 'references.0',
+                # 'metamorphic_grades.0',
+                'minerals',
+                # 'igsn',
+                # 'subsample_ids',
+                # 'chemical_analyses_ids',
+                ]
+        self.labels = {
+            'number': 'Sample', 
+            'rock_type': 'Rock Type', 
+            'description': 'Comment', 
+            'latitude': 'Latitude', 
+            'longitude': 'Longitude', 
+            'location_error': 'Location Error', 
+            'country': 'Country', 
+            'collector_name': 'Collector', 
+            'collection_date': 'Date of Collection', 
+            'location_name': 'Present Sample Location', 
+            # 'references.0': 'Reference', 
+            # 'metamorphic_grades.0': 'Metamorphic Grade', 
+            'minerals': 'Mineral',
+            # 'Subsamples': 'Number of Subsamples',
+            # 'Chemical_Analyses': 'Number of Chemical Analyses'
+        }
+
+        self.num_regions = 0
+        self.num_refs = 0
+        self.num_grades = 0
+        self.minerals = set()
 
     def tablize(self, data, header=None, labels=None):
         if data:
@@ -109,31 +111,13 @@ class SampleCSVRenderer (r.CSVRenderer):
             self.minerals.add(m)
 
     def handle_regions(self,item):
-        regions = set()
-        for r in item['regions']:
-            regions.add(r.title())
-        for r in item['metamorphic_regions']:
-            regions.add(r.title())
+        regions = {r.title() for r in item['regions']} | {r.title() for r in item['metamorphic_regions']}
         self.num_regions = max(self.num_regions,len(regions))
 
     def handle_references(self,item):
-        refs = set()
-        for r in item['references']:
-            refs.add(r)
+        refs = {r for r in item['references']}
         self.num_refs = max(self.num_refs, len(refs))
 
     def handle_meta_grades(self,item):
-        grades = set()
-        for g in item['metamorphic_grades']:
-            grades.add(g.title())
+        grades = {g.title() for g in item['metamorphic_grades']}
         self.num_grades = max(self.num_grades, len(grades))
-
-    # def flatten_item(self, item):
-    #     if isinstance(item, list):
-    #         flat_item = self.flatten_list(item)
-    #     elif isinstance(item, dict):
-    #         flat_item = self.flatten_dict(item)
-    #     else:
-    #         flat_item = {'': item}
-
-    #     return flat_item
