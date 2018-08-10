@@ -51,9 +51,8 @@ class SampleMineralSerializer(DynamicFieldsModelSerializer):
 class SampleSerializer(DynamicFieldsModelSerializer):
     minerals = SampleMineralSerializer(source='samplemineral_set',
                                        many=True)
-    # owner = UserSerializer(read_only=True)
-    owner = serializers.SerializerMethodField(read_only=True)
-    rock_type = serializers.SerializerMethodField(read_only=True)
+    owner = serializers.ReadOnlyField(source='owner.name')
+    rock_type = serializers.ReadOnlyField(source='rock_type.name')
     metamorphic_grades = serializers.SerializerMethodField(read_only=True)
     metamorphic_regions = serializers.SerializerMethodField(read_only=True)
     minerals = serializers.SerializerMethodField(read_only=True)
@@ -123,12 +122,6 @@ class SampleSerializer(DynamicFieldsModelSerializer):
         instance.save()
 
         return instance
-
-    def get_owner(self,obj):
-        return obj.owner.name
-
-    def get_rock_type(self,obj):
-        return obj.rock_type.name
 
     def get_metamorphic_grades(self,obj):
         return [g.name for g in obj.metamorphic_grades.all()]

@@ -4,23 +4,19 @@ from rest_framework_csv import renderers as r
 class SampleCSVRenderer (r.CSVRenderer):
 
     def __init__(self):
-        self.header = ['number',
-                'rock_type',
-                'description',
-                'latitude',
-                'longitude',
-                'location_error',
-                'country',
-                'collector_name',
-                'collection_date',
-                'location_name',
-                # 'references.0',
-                # 'metamorphic_grades.0',
-                'minerals',
-                # 'igsn',
-                # 'subsample_ids',
-                # 'chemical_analyses_ids',
-                ]
+        self.header = [
+            'number',
+            'rock_type',
+            'description',
+            'latitude',
+            'longitude',
+            'location_error',
+            'country',
+            'collector_name',
+            'collection_date',
+            'location_name',
+            'minerals',
+            ]
         self.labels = {
             'number': 'Sample', 
             'rock_type': 'Rock Type', 
@@ -32,14 +28,11 @@ class SampleCSVRenderer (r.CSVRenderer):
             'collector_name': 'Collector', 
             'collection_date': 'Date of Collection', 
             'location_name': 'Present Sample Location', 
-            # 'references.0': 'Reference', 
-            # 'metamorphic_grades.0': 'Metamorphic Grade', 
             'minerals': 'Mineral',
-            # 'Subsamples': 'Number of Subsamples',
-            # 'Chemical_Analyses': 'Number of Chemical Analyses'
         }
 
         self.num_regions = 0
+        self.num_meta_regions = 0
         self.num_refs = 0
         self.num_grades = 0
         self.minerals = set()
@@ -60,11 +53,17 @@ class SampleCSVRenderer (r.CSVRenderer):
                     region_headers.append('regions.' + str(i))
                     labels[region_headers[-1]] = 'Region'
                 header[6:6] = region_headers
+                meta_region_headers = []
+                for i in range(self.num_meta_regions):
+                    meta_region_headers.append('metamorphic_regions.' + str(i))
+                    labels[meta_region_headers[-1]] = 'Metamorphic Region'
+                offset = 6 + self.num_regions
+                header[offset:offset] = meta_region_headers
                 ref_headers = []
                 for i in range(self.num_refs):
                     ref_headers.append('references.' + str(i))
                     labels[ref_headers[-1]] = 'Reference'
-                offset = 10 + self.num_regions
+                offset += 4 + self.num_meta_regions
                 header[offset:offset] = ref_headers
                 grade_headers = []
                 for i in range(self.num_grades):
@@ -111,8 +110,12 @@ class SampleCSVRenderer (r.CSVRenderer):
             self.minerals.add(m)
 
     def handle_regions(self,item):
-        regions = {r.title() for r in item['regions']} | {r.title() for r in item['metamorphic_regions']}
+        regions = {r.title() for r in item['regions']}
         self.num_regions = max(self.num_regions,len(regions))
+
+    def handle_meta_regions(self,item):
+        meta_regions = {r.title() for r in item['metamorphic_regions']}
+        self.num_meta_regions = max(self.num_meta_regions,len(meta_regions))
 
     def handle_references(self,item):
         refs = {r for r in item['references']}
