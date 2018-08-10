@@ -1,5 +1,7 @@
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
+from api.chemical_analyses.v1.renderers import ChemicalAnalysisCSVRenderer
 
 from api.chemical_analyses.lib.query import chemical_analysis_query
 from api.chemical_analyses.v1.serializers import (
@@ -25,6 +27,7 @@ from apps.chemical_analyses.models import (
 class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
     queryset = ChemicalAnalysis.objects.all()
     serializer_class = ChemicalAnalysisSerializer
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, ChemicalAnalysisCSVRenderer)
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,)
 
@@ -50,13 +53,17 @@ class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
 
         qs = chemical_analyses_qs_optimizer(params, qs)
 
-        page = self.paginate_queryset(qs)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        if params.get('format') == 'csv':
+            serializer = self.get_serializer(qs,many=True)
+            return Response(serializer.data)
+        else:
+            page = self.paginate_queryset(qs)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(qs, many=True)
-        return Response(serializer.data)
+            serializer = self.get_serializer(qs, many=True)
+            return Response(serializer.data)
 
 
     def _handle_elements(self, instance, params):
