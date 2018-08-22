@@ -49,6 +49,7 @@ class ChemicalAnalysisCSVRenderer (r.CSVRenderer):
 		self.num_oxides = 0
 		self.elements = set()
 		self.oxides = set()
+		self.fields = set()
 
 	def tablize(self, data, header=None, labels=None):
 		if data:
@@ -63,6 +64,7 @@ class ChemicalAnalysisCSVRenderer (r.CSVRenderer):
 				oxs.sort()
 				header[12:12] = oxs
 				header[12:12] = els
+				header = [x for x in header if (x in self.fields or x in self.elements or x in self.oxides)]
 
 			if labels:
 				yield [labels.get(x,x) for x in header]
@@ -84,13 +86,19 @@ class ChemicalAnalysisCSVRenderer (r.CSVRenderer):
 
 	def flatten_data(self,data):
 		for item in data:
-			self.handle_elements(item)
-			self.handle_oxides(item)
+			self.fields |= item.keys()
+			if (item.get('elements')):
+				self.handle_elements(item)
+			if (item.get('oxides')):
+				self.handle_oxides(item)
 			flat_item = self.flatten_item(item)
 			yield flat_item
 
 	def handle_elements(self,item):
 		for e in item['elements']:
+			if e['precision_type'] == 'REL':
+				e['precision'] *= e['amount']
+				e['precision_type'] = 'ABS'
 			col = '{} ({})'.format(e['symbol'],e['measurement_unit'])
 			prec = '{} Precision ({})'.format(e['symbol'],e['precision_type'])
 			item[col] = e['amount']
@@ -100,6 +108,9 @@ class ChemicalAnalysisCSVRenderer (r.CSVRenderer):
 
 	def handle_oxides(self,item):
 		for o in item['oxides']:
+			if o['precision_type'] == 'REL':
+				o['precision'] *= o['amount']
+				o['precision_type'] = 'ABS'
 			col = '{} ({})'.format(o['species'],o['measurement_unit'])
 			prec = '{} Precision ({})'.format(o['species'],o['precision_type'])
 			item[col] = o['amount']
