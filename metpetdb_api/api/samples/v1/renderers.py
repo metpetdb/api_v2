@@ -36,6 +36,7 @@ class SampleCSVRenderer (r.CSVRenderer):
         self.num_refs = 0
         self.num_grades = 0
         self.minerals = set()
+        self.fields = set()
 
     def tablize(self, data, header=None, labels=None):
         if data:
@@ -74,6 +75,7 @@ class SampleCSVRenderer (r.CSVRenderer):
                 mins = list(self.minerals)
                 mins.sort()
                 header.extend(mins)
+                header = [x for x in header if (x in self.fields or x in self.minerals or x in region_headers or x in meta_region_headers or x in ref_headers or x in grade_headers)]
 
             if labels:
                 yield [labels.get(x,x) for x in header]
@@ -95,13 +97,18 @@ class SampleCSVRenderer (r.CSVRenderer):
 
     def flatten_data(self,data):
         for item in data:
-            self.handle_regions(item)
-            self.handle_minerals(item)
-            self.handle_references(item)
-            self.handle_meta_grades(item)
-            # print(item)
+            self.fields |= item.keys()
+            if (item.get('regions')):
+                self.handle_regions(item)
+            if (item.get('metamorphic_regions')):
+                self.handle_meta_regions(item)
+            if (item.get('minerals')):
+                self.handle_minerals(item)
+            if (item.get('references')):
+                self.handle_references(item)
+            if (item.get('metamorphic_grades')):
+                self.handle_meta_grades(item)
             flat_item = self.flatten_item(item)
-            # print(flat_item)
             yield flat_item
 
     def handle_minerals(self,item):
