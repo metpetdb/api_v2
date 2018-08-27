@@ -4,7 +4,8 @@ from concurrency.fields import AutoIncVersionField
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
-from apps.chemical_analyses.models import Element, Oxide
+from apps.chemical_analyses.shared_models import Element, Oxide
+
 
 class BulkUpload(models.Model):
     pass

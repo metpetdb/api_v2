@@ -11,3 +11,4 @@ sqlparse>=0.1.15
 wheel>=0.24.0
 pathlib
 django-versatileimagefield
+xlrd

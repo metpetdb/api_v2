@@ -17,9 +17,8 @@ from apps.chemical_analyses.models import (
     ChemicalAnalysis,
     ChemicalAnalysisElement,
     ChemicalAnalysisOxide,
-    Element,
-    Oxide,
 )
+from apps.chemical_analyses.shared_models import Element, Oxide
 
 
 class ChemicalAnalysisViewSet(viewsets.ModelViewSet):

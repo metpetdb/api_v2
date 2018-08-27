@@ -141,10 +141,8 @@ class SampleViewSet(viewsets.ModelViewSet):
         instance.references.clear()
         instance.references.add(*to_add)
 
-
     def perform_create(self, serializer):
         return serializer.save()
-
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -265,18 +263,17 @@ class SubsampleViewSet(viewsets.ModelViewSet):
             kwargs['partial'] = True
         return super().get_serializer(*args, **kwargs)
 
-
     def list(self, request, *args, **kwargs):
-        
+
         params = request.query_params
 
         qs = self.get_queryset().distinct()
-        
+
         page = self.paginate_queryset(qs)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-      
+
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
@@ -309,7 +306,7 @@ class SubsampleViewSet(viewsets.ModelViewSet):
                 return Response(data={'error': 'Invalid subsample type'},
                                 status=400)
             else:
-                instance.subsample_type = subsample_type     
+                instance.subsample_type = subsample_type
 
         instance.save()
         # refresh the data before returning a response
@@ -384,10 +381,10 @@ class SampleNumbersView(APIView):
     def get(self, request, format=None):
         sample_numbers = (
             Sample
-            .objects
-            .all()
-            .values_list('number', flat=True)
-            .distinct()
+                .objects
+                .all()
+                .values_list('number', flat=True)
+                .distinct()
         )
         return Response({'sample_numbers': sample_numbers})
 
@@ -396,10 +393,10 @@ class CountryNamesView(APIView):
     def get(self, request, format=None):
         country_names = (
             Country
-            .objects
-            .all()
-            .values_list('name', flat=True)
-            .distinct()
+                .objects
+                .all()
+                .values_list('name', flat=True)
+                .distinct()
         )
         return Response({'country_names': country_names})
 
@@ -408,9 +405,9 @@ class SampleOwnerNamesView(APIView):
     def get(self, request, format=None):
         sample_owner_names = (
             Sample
-            .objects
-            .all()
-            .values_list('owner__name', flat=True)
-            .distinct()
+                .objects
+                .all()
+                .values_list('owner__name', flat=True)
+                .distinct()
         )
         return Response({'sample_owner_names': sample_owner_names})

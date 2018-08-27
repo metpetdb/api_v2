@@ -7,9 +7,8 @@ from apps.chemical_analyses.models import (
     ChemicalAnalysis,
     ChemicalAnalysisElement,
     ChemicalAnalysisOxide,
-    Element,
-    Oxide,
 )
+from apps.chemical_analyses.shared_models import Element, Oxide
 from apps.samples.models import Subsample, Mineral
 from apps.users.models import User
 from api.images.v1.serializers import ImageSerializer
@@ -54,13 +53,13 @@ class ChemicalAnalysisOxideSerializer(DynamicFieldsModelSerializer):
         fields = ('id', 'element_id', 'oxidation_state', 'species', 'weight',
                   'cations_per_oxide', 'conversion_factor', 'order_id',
                   'amount', 'precision', 'precision_type', 'measurement_unit',
-                  'min_amount', 'max_amount' )
+                  'min_amount', 'max_amount')
 
 
 class ChemicalAnalysisSerializer(DynamicFieldsModelSerializer):
     mineral = MineralSerializer(read_only=True)
     owner = UserSerializer(read_only=True)
-    image = ImageSerializer(many=False, read_only=True)
+    reference_image = ImageSerializer(many=False, read_only=True)
     elements = ChemicalAnalysisElementSerializer(
         many=True,
         source='chemicalanalysiselement_set',

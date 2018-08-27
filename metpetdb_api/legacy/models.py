@@ -136,6 +136,7 @@ class SampleMinerals(models.Model):
         db_table = 'sample_minerals'
         unique_together = (('mineral', 'sample'),)
 
+
 class Reference(models.Model):
     reference_id = models.BigIntegerField(primary_key=True)
     name = models.CharField(unique=True, max_length=100)
@@ -143,6 +144,7 @@ class Reference(models.Model):
     class Meta:
         managed = False
         db_table = 'reference'
+
 
 class SampleReference(models.Model):
     sample = models.ForeignKey('Samples')
@@ -161,6 +163,42 @@ class Regions(models.Model):
     class Meta:
         managed = False
         db_table = 'regions'
+
+
+# class ImageTypes(models.Model):
+#     image_type_id = models.SmallIntegerField(primary_key=True)
+#     image_type = models.CharField(null=False, max_length=100)
+#     abbreviation = models.CharField(max_length=10)
+#     comments = models.CharField(max_length=250)
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'image_type'
+#
+#
+# class Images(models.Model):
+#     image_id = models.BigIntegerField(primary_key=True)
+#     checksum = models.CharField(max_length=50, null=False)
+#     version = models.IntegerField(null=False)
+#     sample_id = models.BigIntegerField
+#     subsample_id = models.BigIntegerField
+#     image_format_id = models.SmallIntegerField
+#     image_type_id = models.SmallIntegerField(null=False)
+#     width = models.SmallIntegerField(null=False)
+#     height = models.SmallIntegerField(null=False)
+#     collector = models.CharField(max_length=50)
+#     description = models.CharField(max_length=1024)
+#     scale = models.SmallIntegerField
+#     user_id = models.IntegerField(null=False)
+#     public_data = models.CharField(max_length=1, null=False)
+#     checksum_64x64 = models.CharField(max_length=50, null=False)
+#     checksum_half = models.CharField(max_length=50, null=False)
+#     filename = models.CharField(max_length=256, null=False)
+#     checksum_mobile = models.CharField(max_length=50)
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'images'
 
 class SampleRegions(models.Model):
     sample = models.ForeignKey('Samples')
@@ -240,7 +278,7 @@ class ChemicalAnalyses(models.Model):
     reference_y = models.FloatField(blank=True, null=True)
     stage_x = models.FloatField(blank=True, null=True)
     stage_y = models.FloatField(blank=True, null=True)
-    # image = models.ForeignKey('Images', blank=True, null=True)
+    image = models.ForeignKey('Images', blank=True, null=True)
     analysis_method = models.CharField(max_length=50, blank=True, null=True)
     where_done = models.CharField(max_length=50, blank=True, null=True)
     analyst = models.CharField(max_length=50, blank=True, null=True)
@@ -331,98 +369,94 @@ class Georeference(models.Model):
     class Meta:
         managed = False
         db_table = 'georeference'
-#
-#
-#
-#
-# class ImageComments(models.Model):
-#     comment_id = models.BigIntegerField(primary_key=True)
-#     image = models.ForeignKey('Images')
-#     comment_text = models.TextField()
-#     version = models.IntegerField()
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'image_comments'
-#
-#
-# class ImageFormat(models.Model):
-#     image_format_id = models.SmallIntegerField(primary_key=True)
-#     name = models.CharField(unique=True, max_length=100)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'image_format'
-#
-#
-# class ImageOnGrid(models.Model):
-#     image_on_grid_id = models.BigIntegerField(primary_key=True)
-#     grid = models.ForeignKey(Grids)
-#     image = models.ForeignKey('Images')
-#     top_left_x = models.FloatField()
-#     top_left_y = models.FloatField()
-#     z_order = models.SmallIntegerField()
-#     opacity = models.SmallIntegerField()
-#     resize_ratio = models.FloatField()
-#     width = models.SmallIntegerField()
-#     height = models.SmallIntegerField()
-#     checksum = models.CharField(max_length=50)
-#     checksum_64x64 = models.CharField(max_length=50)
-#     checksum_half = models.CharField(max_length=50)
-#     locked = models.CharField(max_length=1)
-#     angle = models.FloatField(blank=True, null=True)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'image_on_grid'
-#
-#
-# class ImageReference(models.Model):
-#     image = models.ForeignKey('Images')
-#     reference = models.ForeignKey('Reference')
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'image_reference'
-#         unique_together = (('image_id', 'reference_id'),)
-#
-#
-# class ImageType(models.Model):
-#     image_type_id = models.SmallIntegerField(primary_key=True)
-#     image_type = models.CharField(unique=True, max_length=100)
-#     abbreviation = models.CharField(unique=True, max_length=10, blank=True, null=True)
-#     comments = models.CharField(max_length=250, blank=True, null=True)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'image_type'
-#
-#
-# class Images(models.Model):
-#     image_id = models.BigIntegerField(primary_key=True)
-#     checksum = models.CharField(max_length=50)
-#     version = models.IntegerField()
-#     sample = models.ForeignKey('Samples', blank=True, null=True)
-#     subsample = models.ForeignKey('Subsamples', blank=True, null=True)
-#     image_format = models.ForeignKey(ImageFormat, blank=True, null=True)
-#     image_type = models.ForeignKey(ImageType)
-#     width = models.SmallIntegerField()
-#     height = models.SmallIntegerField()
-#     collector = models.CharField(max_length=50, blank=True, null=True)
-#     description = models.CharField(max_length=1024, blank=True, null=True)
-#     scale = models.SmallIntegerField(blank=True, null=True)
-#     user = models.ForeignKey('Users')
-#     public_data = models.CharField(max_length=1)
-#     checksum_64x64 = models.CharField(max_length=50)
-#     checksum_half = models.CharField(max_length=50)
-#     filename = models.CharField(max_length=256)
-#     checksum_mobile = models.CharField(max_length=50, blank=True, null=True)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'images'
-#         unique_together = (('sample_id', 'None'), ('subsample_id', 'None'),)
-#
+
+
+class ImageComments(models.Model):
+    comment_id = models.BigIntegerField(primary_key=True)
+    image = models.ForeignKey('Images')
+    comment_text = models.TextField()
+    version = models.IntegerField()
+
+    class Meta:
+        managed = False
+        db_table = 'image_comments'
+
+
+class ImageFormat(models.Model):
+    image_format_id = models.SmallIntegerField(primary_key=True)
+    name = models.CharField(unique=True, max_length=100)
+
+    class Meta:
+        managed = False
+        db_table = 'image_format'
+
+
+class ImageOnGrid(models.Model):
+    image_on_grid_id = models.BigIntegerField(primary_key=True)
+    grid = models.ForeignKey(Grids)
+    image = models.ForeignKey('Images')
+    top_left_x = models.FloatField()
+    top_left_y = models.FloatField()
+    z_order = models.SmallIntegerField()
+    opacity = models.SmallIntegerField()
+    resize_ratio = models.FloatField()
+    width = models.SmallIntegerField()
+    height = models.SmallIntegerField()
+    checksum = models.CharField(max_length=50)
+    checksum_64x64 = models.CharField(max_length=50)
+    checksum_half = models.CharField(max_length=50)
+    locked = models.CharField(max_length=1)
+    angle = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'image_on_grid'
+
+
+class ImageReference(models.Model):
+    image = models.ForeignKey('Images')
+    reference = models.ForeignKey('Reference')
+
+    class Meta:
+        managed = False
+        db_table = 'image_reference'
+
+
+class ImageType(models.Model):
+    image_type_id = models.SmallIntegerField(primary_key=True)
+    image_type = models.CharField(unique=True, max_length=100)
+    abbreviation = models.CharField(unique=True, max_length=10, blank=True, null=True)
+    comments = models.CharField(max_length=250, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'image_type'
+
+
+class Images(models.Model):
+    image_id = models.BigIntegerField(primary_key=True)
+    checksum = models.CharField(max_length=50)
+    version = models.IntegerField()
+    sample = models.ForeignKey('Samples', blank=True, null=True)
+    subsample = models.ForeignKey('Subsamples', blank=True, null=True)
+    image_format = models.ForeignKey(ImageFormat, blank=True, null=True)
+    image_type = models.ForeignKey(ImageType)
+    width = models.SmallIntegerField()
+    height = models.SmallIntegerField()
+    collector = models.CharField(max_length=50, blank=True, null=True)
+    description = models.CharField(max_length=1024, blank=True, null=True)
+    scale = models.SmallIntegerField(blank=True, null=True)
+    user = models.ForeignKey('Users')
+    public_data = models.CharField(max_length=1)
+    checksum_64x64 = models.CharField(max_length=50)
+    checksum_half = models.CharField(max_length=50)
+    filename = models.CharField(max_length=256)
+    checksum_mobile = models.CharField(max_length=50, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'images'
+
 #
 #
 #
@@ -595,13 +629,14 @@ class Oxides(models.Model):
 #         db_table = 'users_roles'
 #
 #
-# class XrayImage(models.Model):
-#     image = models.ForeignKey(Images, primary_key=True)
-#     element = models.CharField(max_length=256, blank=True, null=True)
-#     dwelltime = models.SmallIntegerField(blank=True, null=True)
-#     current = models.SmallIntegerField(blank=True, null=True)
-#     voltage = models.SmallIntegerField(blank=True, null=True)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'xray_image'
+
+class XrayImage(models.Model):
+    image = models.OneToOneField(Images, primary_key=True)
+    element = models.CharField(max_length=256, blank=True, null=True)
+    dwelltime = models.SmallIntegerField(blank=True, null=True)
+    current = models.SmallIntegerField(blank=True, null=True)
+    voltage = models.SmallIntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'xray_image'
