@@ -104,7 +104,6 @@ class ImageContainerSerializer(serializers.ModelSerializer):
                 header_to_index[COMMENT].add(index)
             else:
                 header_to_index[header] = index
-        print(header_to_index)
         return worksheet, header_to_index
 
     @staticmethod
