@@ -73,6 +73,8 @@ router.register(r'bulk_upload', BulkUploadViewSet)
 router.register(r'image_sets', ImageContainerViewSet)
 router.register(r'images', ImageViewSet)
 
+
+
 urlpatterns = [
     url(r'^api/', include(router.urls)),
     url(r'^api/admin/', include(admin.site.urls)),

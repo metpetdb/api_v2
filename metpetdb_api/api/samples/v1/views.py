@@ -1,6 +1,8 @@
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
+from api.samples.v1.renderers import SampleCSVRenderer
 
 from api.chemical_analyses.lib.query import chemical_analysis_query
 from api.lib.permissions import IsOwnerOrReadOnly, IsSuperuserOrReadOnly
@@ -37,10 +39,10 @@ from apps.samples.models import (
     SubsampleType,
 )
 
-
 class SampleViewSet(viewsets.ModelViewSet):
     queryset = Sample.objects.all()
     serializer_class = SampleSerializer
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, SampleCSVRenderer)
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly,)
 
@@ -72,13 +74,17 @@ class SampleViewSet(viewsets.ModelViewSet):
 
         qs = sample_qs_optimizer(params, qs)
 
-        page = self.paginate_queryset(qs)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        if params.get('format') == 'csv':
+            serializer = self.get_serializer(qs, many=True)
+            return Response(serializer.data)
+        else:
+            page = self.paginate_queryset(qs)
+            if page:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(qs, many=True)
-        return Response(serializer.data)
+            serializer = self.get_serializer(qs, many=True)
+            return Response(serializer.data)
 
     def _handle_metamorphic_regions(self, instance, ids):
         metamorphic_regions = []
@@ -411,3 +417,70 @@ class SampleOwnerNamesView(APIView):
                 .distinct()
         )
         return Response({'sample_owner_names': sample_owner_names})
+
+'''
+class SampleCSVRenderer (r.CSVRenderer):
+    header = ['Sample', 'Rock_Type', 'Comment', 'Latitude', 'Longitude', 'Location_Error', 'Region', 'Country', 'Collector', 'Date_of_Collection', 'Present_Sample_Location', 'Reference', 'Metamorphic_Grade', 'Minerals', 'Subsamples', 'Chemical_Analyses']
+    labels = {
+        'Sample': 'Sample', 
+        'Rock_Type': 'Rock Type', 
+        'Comment': 'Comment', 
+        'Latitude': 'Latitude', 
+        'Longitude': 'Longitude', 
+        'Location_Error': 'Location Error',
+        'Region': 'Region', 
+        'Country': 'Country', 
+        'Collector': 'Collector', 
+        'Date_of_Collection': 'Date of Collection', 
+        'Present_Sample_Location': 'Present Sample Location', 
+        'Reference': 'Reference', 
+        'Metamorphic_Grade': 'Metamorphic Grade', 
+        'Minerals': 'Mineral',
+        'Subsamples': 'Number of Subsamples',
+        'Chemical_Analyses': 'Number of Chemical Analyses'
+    }
+
+
+
+class SampleSearchView(SampleViewSet):
+    serializer_class = SampleSearchSerializer
+    renderer_classes = (JSONRenderer, BrowsableAPIRenderer, SampleCSVRenderer)
+
+    def get_serializer(self, *args, **kwargs):
+        return super().get_serializer(*args,**kwargs)
+
+    def list(self, request, *args, **kwargs):
+        params = request.query_params
+
+        if params.get('chemical_analyses_filters') == 'True':
+            chem_qs = ChemicalAnalysis.objects.all()
+            chem_qs = chemical_analyses_qs_optimizer(params, chem_qs)
+            chem_ids = (chemical_analysis_query(request.user, params, chem_qs)
+                        .values_list('id'))
+            qs = (Sample
+                  .objects
+                  .filter(subsamples__chemical_analyses__id__in=chem_ids))
+        else:
+            qs = self.get_queryset().distinct()
+            try:
+                qs = sample_query(request.user, params, qs)
+            except ValueError as err:
+                return Response(
+                    data={'error': err.args},
+                    status=400
+                )
+
+        qs = sample_qs_optimizer(params, qs)
+
+        if params.get('format') == 'csv':
+            serializer = self.get_serializer(qs, many=True)
+            return Response(serializer.data)
+        else:
+            page = self.paginate_queryset(qs)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(qs, many=True)
+            return Response(serializer.data)
+'''

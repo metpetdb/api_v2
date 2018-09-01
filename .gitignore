@@ -2,6 +2,7 @@
 
 ### Env files
 *.env
+*.save
 
 ### Database dump files
 *.dmp
