@@ -63,7 +63,7 @@ INSTALLED_APPS = (
     'apps.users',
     'apps.core',
     'versatileimagefield',
-    'apps.images'
+    'apps.images',
     'rest_framework_csv',
 )
 
