@@ -71,6 +71,7 @@ router.register(r'bulk_upload', BulkUploadViewSet)
 urlpatterns = [
     url(r'^api/', include(router.urls)),
     url(r'^api/admin/', include(admin.site.urls)),
+    url(r'^api/auth/', include('djoser.urls')),
     url(r'^api/auth/', include('djoser.urls.authtoken')),
 
     url(r'^api/sample_numbers/$', SampleNumbersView.as_view()),
