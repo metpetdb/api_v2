@@ -4,7 +4,8 @@ from concurrency.fields import AutoIncVersionField
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
-from apps.chemical_analyses.models import Element, Oxide
+from apps.chemical_analyses.shared_models import Element, Oxide
+
 
 class BulkUpload(models.Model):
     pass
@@ -15,6 +16,7 @@ class RockType(models.Model):
 
     class Meta:
         db_table = 'rock_types'
+        ordering = ['id']
 
 
 class Sample(models.Model):
@@ -64,6 +66,7 @@ class Sample(models.Model):
 
     class Meta:
         db_table = 'samples'
+        ordering = ['id']
 
 
 class SubsampleType(models.Model):
@@ -72,6 +75,7 @@ class SubsampleType(models.Model):
 
     class Meta:
         db_table = 'subsample_types'
+        ordering = ['id']
 
 
 class Subsample(models.Model):
@@ -85,6 +89,7 @@ class Subsample(models.Model):
 
     class Meta:
         db_table = 'subsamples'
+        ordering = ['id']
 
 
 class Grid(models.Model):
@@ -105,6 +110,7 @@ class MetamorphicGrade(models.Model):
 
     class Meta:
         db_table = 'metamorphic_grades'
+        ordering = ['id']
 
 
 class MetamorphicRegion(models.Model):
@@ -116,6 +122,7 @@ class MetamorphicRegion(models.Model):
 
     class Meta:
         db_table = 'metamorphic_regions'
+        ordering = ['id']
 
 
 class Mineral(models.Model):
@@ -130,6 +137,7 @@ class Mineral(models.Model):
 
     class Meta:
         db_table = 'minerals'
+        ordering = ['id']
 
 
 class SampleMineral(models.Model):
@@ -179,6 +187,7 @@ class GeoReference(models.Model):
 
     class Meta:
         db_table = 'georeferences'
+        ordering = ['id']
 
 
 # Following are models for easy retrieval of sample-related free-text fields
@@ -208,6 +217,7 @@ class Region(models.Model):
 
     class Meta:
         db_table = 'regions'
+        ordering = ['id']
 
 
 class Reference(models.Model):
@@ -216,6 +226,7 @@ class Reference(models.Model):
 
     class Meta:
         db_table = 'references'
+        ordering = ['id']
 
 
 class Collector(models.Model):
@@ -224,7 +235,7 @@ class Collector(models.Model):
 
     class Meta:
         db_table = 'collectors'
-
+        ordering = ['id']
 
 # A mapping table to help the migration of old samples to new samples; can
 # be gotten rid of once thi app goes into production.

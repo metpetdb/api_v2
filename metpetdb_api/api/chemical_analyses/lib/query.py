@@ -54,4 +54,7 @@ def chemical_analysis_query(user, params, qs):
     if params.get('subsample_ids'):
         qs = qs.filter(subsample_id__in=params.get('subsample_ids').split(','))
 
+    if params.get('ordering'):
+        qs = qs.order_by(params['ordering'])
+
     return qs

@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from api.lib.serializers import DynamicFieldsModelSerializer
 from api.users.v1.serializers import UserSerializer
+from api.images.v1.serializers import ImageSerializer
 
 from apps.chemical_analyses.models import ChemicalAnalysis
 from apps.samples.models import (
@@ -23,18 +24,20 @@ from apps.users.models import User
 SAMPLE_FIELDS = ('number', 'aliases', 'collection_date', 'description',
                  'location_name', 'location_coords', 'location_error',
                  'date_precision', 'country', 'regions', 'collector_name',
-                 'collector_id', 'sesar_number',)
+                 'collector_id', 'sesar_number', 'image')
 
 SUBSAMPLE_FIELDS = ('name')
 
 class RockTypeSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = RockType
+        fields = '__all__'
 
 
 class MineralSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Mineral
+        fields = '__all__'
 
 
 class SampleMineralSerializer(DynamicFieldsModelSerializer):
@@ -51,9 +54,8 @@ class SampleMineralSerializer(DynamicFieldsModelSerializer):
 class SampleSerializer(DynamicFieldsModelSerializer):
     minerals = SampleMineralSerializer(source='samplemineral_set',
                                        many=True)
-    # owner = UserSerializer(read_only=True)
-    owner = serializers.SerializerMethodField(read_only=True)
-    rock_type = serializers.SerializerMethodField(read_only=True)
+    owner = serializers.ReadOnlyField(source='owner.name')
+    rock_type = serializers.ReadOnlyField(source='rock_type.name')
     metamorphic_grades = serializers.SerializerMethodField(read_only=True)
     metamorphic_regions = serializers.SerializerMethodField(read_only=True)
     minerals = serializers.SerializerMethodField(read_only=True)
@@ -61,6 +63,8 @@ class SampleSerializer(DynamicFieldsModelSerializer):
     latitude = serializers.SerializerMethodField(read_only=True)
     longitude = serializers.SerializerMethodField(read_only=True)
     collection_date = serializers.SerializerMethodField(read_only=True)
+
+    images = ImageSerializer(many=True, read_only=True)
 
     # TODO: figure out if there is a better, more efficient way to do this
     subsample_ids = serializers.SerializerMethodField()
@@ -115,7 +119,6 @@ class SampleSerializer(DynamicFieldsModelSerializer):
         instance = super().create(validated_data)
         return instance
 
-
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             if attr in SAMPLE_FIELDS:
@@ -123,12 +126,6 @@ class SampleSerializer(DynamicFieldsModelSerializer):
         instance.save()
 
         return instance
-
-    def get_owner(self,obj):
-        return obj.owner.name
-
-    def get_rock_type(self,obj):
-        return obj.rock_type.name
 
     def get_metamorphic_grades(self,obj):
         return [g.name for g in obj.metamorphic_grades.all()]
@@ -165,10 +162,12 @@ class SampleSerializer(DynamicFieldsModelSerializer):
 class SubsampleSerializer(DynamicFieldsModelSerializer):
     sample = SampleSerializer(read_only=True)
     owner = UserSerializer(read_only=True)
+    images = ImageSerializer(many=True, read_only=True)
     
     class Meta:
         model = Subsample
         depth = 1
+        fields = '__all__'
 
     def is_valid(self, raise_exception=False):
         super().is_valid(raise_exception)
@@ -212,32 +211,40 @@ class SubsampleTypeSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = SubsampleType
         depth = 1
+        fields = '__all__'
 
 
 class MetamorphicGradeSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = MetamorphicGrade
+        fields = '__all__'
 
 
 class MetamorphicRegionSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = MetamorphicRegion
+        fields = '__all__'
 
 
 class GeoReferenceSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = GeoReference
+        fields = '__all__'
+
 
 class RegionSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Region
+        fields = '__all__'
 
 
 class ReferenceSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Reference
+        fields = '__all__'
 
 
 class CollectorSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Collector
+        fields = '__all__'

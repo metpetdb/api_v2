@@ -13,11 +13,10 @@ def sample_query(user, params, qs):
         qs = qs.filter(Q(owner=user) | Q(public_data=True))
 
     if params.get('provenance'):
-        if params['provenance']=="Public":
+        if params['provenance'] == "Public":
             qs = qs.filter(Q(public_data=True))
         elif params['provenance'] == "Private":
             qs = qs.filter(Q(public_data=False))
-
 
     if params.get('ids'):
         qs = qs.filter(pk__in=params['ids'].split(','))
@@ -32,7 +31,7 @@ def sample_query(user, params, qs):
         qs = qs.filter(country__in=params['countries'].split(','))
 
     if params.get('location_bbox'):
-        bbox  = Polygon.from_bbox(params['location_bbox'].split(','))
+        bbox = Polygon.from_bbox(params['location_bbox'].split(','))
         qs = qs.filter(location_coords__contained=bbox)
 
     if params.get('polygon_coords'):
@@ -49,7 +48,7 @@ def sample_query(user, params, qs):
 
     if params.get('metamorphic_regions'):
         metamorphic_regions = params['metamorphic_regions'].split(',')
-        qs =qs.filter(metamorphic_regions__name__in=metamorphic_regions)
+        qs = qs.filter(metamorphic_regions__name__in=metamorphic_regions)
 
     if params.get('minerals'):
         minerals = params['minerals'].split(',')

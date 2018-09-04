@@ -1,8 +1,9 @@
 import uuid
-from concurrency.fields import AutoIncVersionField
 
+from concurrency.fields import AutoIncVersionField
 from django.conf import settings
 from django.contrib.gis.db import models
+from apps.images.models import Image
 
 
 class ChemicalAnalysis(models.Model):
@@ -31,39 +32,16 @@ class ChemicalAnalysis(models.Model):
                                       through='ChemicalAnalysisElement')
     oxides = models.ManyToManyField('Oxide', through='ChemicalAnalysisOxide')
 
+    reference_image = models.ForeignKey(Image, on_delete=models.CASCADE, blank=True, null=True,
+                                          related_name='chemical_analyses')
+
     # Free-text field; stored as an CharField to avoid joining to the
     # references table every time we retrieve chemical analyses
     reference = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         db_table = 'chemical_analyses'
-
-
-class Element(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(unique=True, max_length=100)
-    alternate_name = models.CharField(max_length=100, blank=True, null=True)
-    symbol = models.CharField(unique=True, max_length=4)
-    atomic_number = models.IntegerField()
-    weight = models.FloatField(blank=True, null=True)
-    order_id = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        db_table = 'elements'
-
-
-class Oxide(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    element = models.ForeignKey('Element')
-    oxidation_state = models.SmallIntegerField(blank=True, null=True)
-    species = models.CharField(unique=True, max_length=20, blank=True, null=True)
-    weight = models.FloatField(blank=True, null=True)
-    cations_per_oxide = models.SmallIntegerField(blank=True, null=True)
-    conversion_factor = models.FloatField()
-    order_id = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        db_table = 'oxides'
+        ordering = ['id']
 
 
 class ChemicalAnalysisElement(models.Model):
