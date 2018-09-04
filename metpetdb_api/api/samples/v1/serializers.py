@@ -91,6 +91,7 @@ class SampleSerializer(DynamicFieldsModelSerializer):
             'collection_date',
             'location_name',
             'description',
+            'images',
             'subsample_ids',
             'chemical_analyses_ids',
             )
