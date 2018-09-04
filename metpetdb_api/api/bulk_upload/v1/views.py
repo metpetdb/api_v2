@@ -56,10 +56,8 @@ from apps.chemical_analyses.models import (
     ChemicalAnalysis,
     ChemicalAnalysisElement,
     ChemicalAnalysisOxide,
-    Element,
-    Oxide,
 )
-
+from apps.chemical_analyses.shared_models import Element, Oxide
 
 from api.bulk_upload.v1 import upload_templates
 import json

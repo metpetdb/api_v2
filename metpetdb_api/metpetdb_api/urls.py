@@ -45,7 +45,12 @@ from api.samples.v1.views import (
 )
 from api.users.v1.views import UserViewSet
 
+from api.images.v1.views import ImageContainerViewSet, ImageViewSet
+
 from api.bulk_upload.v1.views import BulkUploadViewSet
+
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 router = routers.DefaultRouter()
@@ -65,6 +70,8 @@ router.register(r'regions', RegionViewSet)
 router.register(r'references', ReferenceViewSet)
 router.register(r'collectors', CollectorViewSet)
 router.register(r'bulk_upload', BulkUploadViewSet)
+router.register(r'image_sets', ImageContainerViewSet)
+router.register(r'images', ImageViewSet)
 
 
 
@@ -77,4 +84,4 @@ urlpatterns = [
     url(r'^api/sample_numbers/$', SampleNumbersView.as_view()),
     url(r'^api/country_names/$', CountryNamesView.as_view()),
     url(r'^api/sample_owner_names/$', SampleOwnerNamesView.as_view()),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -6,9 +6,8 @@ from apps.chemical_analyses.models import (
     ChemicalAnalysis,
     ChemicalAnalysisElement,
     ChemicalAnalysisOxide,
-    Element,
-    Oxide,
 )
+from apps.chemical_analyses.shared_models import Element, Oxide
 from apps.common.utils import queryset_iterator
 from apps.samples.models import (
     Mineral,
@@ -18,6 +17,8 @@ from apps.samples.models import (
     Subsample,
     Reference,
 )
+
+from apps.images.models import Image
 
 from legacy.models import (
     ChemicalAnalyses as LegacyChemicalAnalyses,
@@ -81,6 +82,11 @@ class Command(BaseCommand):
             except AttributeError:
                 reference = None
 
+            try:
+                reference_image = Image.get(subsample=subsample)
+            except Image.DoesNotExist:
+                reference_image = None
+
             chem_analysis = ChemicalAnalysis.objects.create(
                 subsample=subsample,
                 public_data=True if record.public_data == 'Y' else False,
@@ -99,6 +105,7 @@ class Command(BaseCommand):
                 mineral=mineral,
                 owner=User.objects.get(email=record.user.email),
                 reference=reference,
+                reference_image=reference_image
             )
 
             legacy_cae = LegacyChemicalAnalysisElements.objects.filter(

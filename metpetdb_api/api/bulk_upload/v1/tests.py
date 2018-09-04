@@ -12,10 +12,8 @@ from apps.samples.models import (
     Subsample
 )
 
-from apps.chemical_analyses.models import(
-    Element,
-    Oxide,
-)
+from apps.chemical_analyses.shared_models import Element, Oxide
+
 
 class BulkUploadTests(APITransactionTestCase):
     """
