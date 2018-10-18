@@ -221,7 +221,7 @@ class Command(BaseCommand):
             checksum = old_image.checksum
             try:
                 with open('{}/{}/{}/{}'.format(BASE_DIR, checksum[0:2], checksum[2:4], checksum[4:]), 'rb') as image_file:
-                    new_image.image.save(old_image.filename, File(image_file))
+                    new_image.image.convert('RGB').save(old_image.filename, File(image_file))
                     new_image.save()
             except Exception as ex:
                 print('ERROR saving image with checksum {}. Errors logged to {}'.format(checksum, FAILED_IMAGES_FILE))
