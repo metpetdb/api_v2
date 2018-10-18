@@ -18,7 +18,7 @@ from apps.samples.models import (
     Reference,
 )
 
-from apps.images.models import Image
+from apps.images.models import Image, ImageMapping
 
 from legacy.models import (
     ChemicalAnalyses as LegacyChemicalAnalyses,
@@ -83,8 +83,13 @@ class Command(BaseCommand):
                 reference = None
 
             try:
-                reference_image = Image.get(subsample=subsample)
+                reference_image = Image.objects.get(
+                    subsample=subsample,
+                    pk=ImageMapping.objects.get(
+                        old_image_id=record.image.pk).new_image_id)
             except Image.DoesNotExist:
+                reference_image = None
+            except AttributeError:
                 reference_image = None
 
             chem_analysis = ChemicalAnalysis.objects.create(

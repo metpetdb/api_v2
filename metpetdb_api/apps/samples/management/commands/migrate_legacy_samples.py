@@ -26,7 +26,8 @@ from apps.images.models import (
     ImageType,
     Image,
     XrayImage,
-    ImageComments
+    ImageComments,
+    ImageMapping
 )
 from legacy.models import (
     Georeference as LegacyGeoreference,
@@ -214,6 +215,8 @@ class Command(BaseCommand):
                 sample=new_sample,
                 subsample=new_subsample
             )
+
+            ImageMapping.objects.create(old_image_id=old_image.pk,new_image_id=new_image.pk)
 
             checksum = old_image.checksum
             try:

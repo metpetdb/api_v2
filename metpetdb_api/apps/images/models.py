@@ -78,6 +78,16 @@ class XrayImage(models.Model):
         db_table = 'xray_image'
         ordering = ('image_id',)
 
+# A mapping table to help migration of old images to new images.
+# needed (I think?) for chemical analysis migration.
+class ImageMapping(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    old_image_id = models.IntegerField()
+    new_image_id = models.UUIDField()
+
+    class Meta:
+        db_table = 'image_mapping'
+
 
 @receiver(models.signals.post_save, sender=Image)
 def warm_images(sender, instance, **kwargs):
