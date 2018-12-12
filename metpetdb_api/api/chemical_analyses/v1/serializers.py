@@ -82,6 +82,7 @@ class ChemicalAnalysisOxideSerializer(DynamicFieldsModelSerializer):
 class ChemicalAnalysisSerializer(DynamicFieldsModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.name')
     sample = serializers.ReadOnlyField(source='subsample.sample.number')
+    sample_id = serializers.ReadOnlyField(source='subsample.sample.id')
     subsample = serializers.ReadOnlyField(source='subsample.name')
     subsample_type = serializers.ReadOnlyField(source='subsample.subsample_type.name')
     mineral = serializers.ReadOnlyField(source='mineral.name')
@@ -103,11 +104,13 @@ class ChemicalAnalysisSerializer(DynamicFieldsModelSerializer):
         fields = (
             'owner',
             'sample',
+            'sample_id',
             'subsample',
             'subsample_type',
             'mineral',
             'analysis_method',
             'reference',
+            'reference_image',
             'spot_id',
             'where_done',
             'analysis_date',
