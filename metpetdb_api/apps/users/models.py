@@ -76,6 +76,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         db_table = 'users'
+        ordering = ['name']
 
     def get_full_name(self):
         """

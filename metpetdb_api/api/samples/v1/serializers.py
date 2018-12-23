@@ -74,6 +74,7 @@ class SampleSerializer(DynamicFieldsModelSerializer):
         model = Sample
         depth = 1
         fields = (
+            'id',
             'number',
             'owner',
             'regions',
@@ -85,6 +86,7 @@ class SampleSerializer(DynamicFieldsModelSerializer):
             'references',
             'longitude',
             'latitude',
+            'location_coords',
             'location_error',
             # 'igsn',
             'collector_name',
