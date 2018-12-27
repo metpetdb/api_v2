@@ -26,6 +26,25 @@ All other fields are assumed to be simple, i.e. directly mapped
 """
 import copy
 
+# labels are case insensitive!
+sample_label_mappings = {
+    'sample number':'number',
+    'rock type':'rock_type_name',
+    'latitude':'latitude',
+    'longitude':'longitude',
+    'location error':'location_error',
+    'collector':'collector_name',
+    'date of collection':'collection_date',
+    'present sample location':'location_name',
+    'comment':'comment',
+    'country':'country',
+    # multi-fields 
+    'reference':'references',
+    'region':'regions',
+    'metamorphic region':'metamorphic_regions',
+    'metamorphic grade':'metamorphic_grades'
+}
+
 class Template:
     def __init__(self, c_types = [], required = [], db_types = [], types = {}): 
         self.complex_types = c_types
@@ -189,18 +208,21 @@ class SampleTemplate(Template):
         return 0
     
     def get_meta_header(self,header):
-        mappings = {'mineral' : 'minerals'}
-        added = set()        
+        mappings = sample_label_mappings
+        added = set()
         meta_header = []
         itr = iter(header)
         for heading in itr:
-            if heading == 'latitude':
+            if heading.lower() == 'latitude':
                 for i in range (0,2): heading = next(itr)
                 meta_header.append((('latitude','longitude'),'location_coords'))
             elif heading not in added:
-                if heading in mappings.keys():
-                    meta_header.append((heading, mappings[heading]))
+                if heading.lower() in mappings.keys():
+                    meta_header.append((heading, mappings[heading.lower()]))
                     added.add(heading)
                 else:
                     meta_header.append((heading, heading)) 
+        print("\nMETA-HEADER:")
+        print(meta_header)
+        print("\n\n")
         return meta_header
