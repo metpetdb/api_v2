@@ -18,7 +18,7 @@ class SampleCSVRenderer (r.CSVRenderer):
             'minerals',
             ]
         self.labels = {
-            'number': 'Sample', 
+            'number': 'Sample Number', 
             'rock_type': 'Rock Type', 
             'description': 'Comment', 
             'latitude': 'Latitude', 
