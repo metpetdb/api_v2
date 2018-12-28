@@ -36,14 +36,15 @@ sample_label_mappings = {
     'collector':'collector_name',
     'date of collection':'collection_date',
     'present sample location':'location_name',
-    'comment':'comment',
     'country':'country',
     # multi-fields 
+    'comment':'description',
     'reference':'references',
     'region':'regions',
     'metamorphic region':'metamorphic_regions',
     'metamorphic grade':'metamorphic_grades'
 }
+
 
 class Template:
     def __init__(self, c_types = [], required = [], db_types = [], types = {}): 
@@ -64,12 +65,13 @@ class Template:
                 raise Exception("inconsistent line length. Expected {0}, but was {1}".format(len(data[i-1]), len(data[i])))
     
     def check_required(self, row):
-        header = row[0]
+        header = [x for x in row[0]]
+        for i in range(0,len(header)):
+            header[i] = header[i].lower()
         missing ={}
-        for i in range(0, len(header)):
-            if self.is_required(header[i]):
-                if row[1][i] == '':
-                    missing[header[i]] = 'missing'
+        for i in range(0, len(self.required)):
+            if self.required[i] not in header:
+                missing[self.required[i]] = 'missing'
         return missing
 
     def check_type(self, curr_row):
@@ -123,7 +125,7 @@ class Template:
         for heading in header:
             if self.is_complex(heading): result_template[heading] = []
             else: result_template[heading] = ''
-        result_template['errors'] = '';
+        result_template['errors'] = ''
         
         for i in range(1, len(data)):
             tmp_result = self.TemplateResult(copy.deepcopy(result_template))
@@ -133,17 +135,8 @@ class Template:
             for j in range(0,len(data[i])):
                 heading = header[j]
                               
-                if heading in self.amounts:
-                    name = data[i][j]
-                    amount = self.get_amount(data,i,j)
-                    tmp_result.set_field_complex(heading, {"name": name, "amount": amount})
-                    continue
-
-                if heading == 'mineral' and heading not in self.amounts:
-                    tmp_result.set_field_complex(heading, {"name": data[i][j]})
-                    continue
-
                 field = data[i][j]
+                print("{}: {}".format(heading,data[i][j]))
                 if self.is_complex(heading):
                     tmp_result.set_field_complex(heading,field)
                 else: tmp_result.set_field_simple(heading, field)
@@ -152,8 +145,8 @@ class Template:
             result.append(tmp_result.get_rep())
         return result, meta_header
 
-    def is_complex(self, name): return name in self.complex_types
-    def is_required(self, name): return name in self.required
+    def is_complex(self, name): return name.lower() in self.complex_types
+    def is_required(self, name): return name.lower() in self.required
     def is_db_type(self, name): return name in self.db_types
 
 class ChemicalAnalysesTemplate(Template):
@@ -187,19 +180,19 @@ class ChemicalAnalysesTemplate(Template):
                     meta_header.append((heading, mappings[heading]))
                     added.add(heading)
                 else:
-                    meta_header.append((heading, heading)) 
+                    meta_header.append((heading, heading))
+                    added.add(heading)
         return meta_header
 
 class SampleTemplate(Template):
     
     def __init__(self):
-        complex_types = ["comment", "references", "mineral", "metamorphic_region_id", "metamorphic_grade"]
-        required = ["number", "latitude", "longitude", "rock_type_name"]
+        complex_types = ["comment", "reference", "region", "metamorphic region", "metamorphic grade"]
+        required = ["sample number", "latitude", "longitude", "rock type"]
         types = {"comment": str, "latitude": float, 'longitude': float}
         db_types = ["minerals"]
         #selected_types = {'minerals': ['el1', 'el2', 'el3']}
         Template.__init__(self, complex_types, required, db_types, types)
-        self.amounts.add('mineral')
    
     def check_amounts(self,header):
         pass
@@ -215,13 +208,14 @@ class SampleTemplate(Template):
         for heading in itr:
             if heading.lower() == 'latitude':
                 for i in range (0,2): heading = next(itr)
-                meta_header.append((('latitude','longitude'),'location_coords'))
+                meta_header.append((('latitude','longitude'),'Location'))
             elif heading not in added:
                 if heading.lower() in mappings.keys():
-                    meta_header.append((heading, mappings[heading.lower()]))
+                    meta_header.append((heading.lower(),heading))
                     added.add(heading)
                 else:
-                    meta_header.append((heading, heading)) 
+                    meta_header.append((heading, heading))
+                    added.add(heading)
         print("\nMETA-HEADER:")
         print(meta_header)
         print("\n\n")

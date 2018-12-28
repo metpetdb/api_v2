@@ -65,6 +65,20 @@ import sys
 import urllib.request
 from csv import reader
 
+
+sample_labels_dict = {
+    'Sample Number':'number',
+    'Rock Type':'rock_type_name',
+    'Latitude':'latitude',
+    'Longitude':'longitude',
+    'Location Error':'location_error',
+    'Collector':'collector_name',
+    'Date of Collection':'collection_date',
+    'Present Sample Location':'location_name',
+    'Country':'country'
+}
+
+
 class Parser:
     def __init__(self, template):
         self.template = template 
@@ -85,6 +99,7 @@ class Parser:
             lined = self.line_split(content)
             return  self.template.parse(lined) # return the JSON ready file
         except Exception as err:
+            print(err)
             raise ValueError(str(err))
 
 class BulkUploadViewSet(viewsets.ModelViewSet):
@@ -366,6 +381,61 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
         transaction.set_autocommit(False)
 
         for i,sample_obj in enumerate(JSON):
+
+            print(sample_obj)
+
+            # REQUIRED FIELDS:
+            #   Sample Number
+            #   Rock Type
+            #   Latitude
+            #   Longitude
+
+            # OPTIONAL FIELDS:
+            #   Location Error
+            #   Metamorphic Region
+            #   Reference
+            #   Present Sample Location
+            #   Region
+            #   Date of Collection
+            #   Comment
+            #   Metamorphic Grade
+            #   Country
+            #   Collector
+            #   [minerals]
+
+
+            # PROCEDURE:
+            ## ensure all required fields are present
+            ## verify all other fields are valid optional fields or minerals
+            ## manipulate data for serializer
+            ## create serializer
+
+            minerals = []
+            fields = [x for x in sample_obj.keys()]
+            for field in fields:
+                if field.lower() in upload_templates.sample_label_mappings.keys():
+                    # add proper formatting to date
+                    if field.lower() == 'date of collection':
+                        sample_obj[field] = sample_obj[field] + 'T00:00:00.000Z'
+                    # join comments with newline
+                    elif field.lower() == 'comment':
+                        sample_obj[field] = '\n'.join(sample_obj[field])
+                    # replace field with corresponding serializer fieldname
+                    sample_obj[upload_templates.sample_label_mappings[field.lower()]] = sample_obj[field]
+                    del(sample_obj[field])
+                elif field != 'errors' and field not in upload_templates.sample_label_mappings.values(): # it had better be a mineral
+                    try: 
+                        amount = sample_obj[field]
+                        minerals.append(
+                            {'id':Mineral.objects.get(name=field).id,
+                             'name':field,
+                             'amount':amount})
+                    except:
+                        print(field)
+                        return self.set_err(before_parse_json, i, 'minerals', 'Invalid mineral {}'.format(field), meta_header)
+
+            sample_obj['minerals'] = minerals
+
             try:
                 sample_obj['owner'] = request.data.get('owner')
             except:
@@ -375,38 +445,18 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                     status = 400
                 )
 
-            minerals = sample_obj['mineral']
-
-            rock_type = sample_obj['rock_type_name']
-            to_add = []
-
-            for mineral in minerals:
-                try:
-                    to_add.append(
-                        {'id': Mineral.objects.get(name=mineral['name']).id,
-                         'name': mineral['name'],
-                         'amount': '0'})
-                except:
-                    return self.set_err(before_parse_json, i, 'minerals', 'Invalid mineral {0}'.format(mineral), meta_header)
-
-            sample_obj['minerals'] = to_add
-                        
-            del(sample_obj['mineral'])
-          
-            # Need this for a proper collection date 
-            if sample_obj['collection_date']:
-                sample_obj['collection_date'] += 'T00:00:00.000Z'
-            
-            try:
-                sample_obj['rock_type_id'] = RockType.objects.get(name=rock_type).id
-            except:
-                return self.set_err(before_parse_json, i, 'rock_type_id', 'Invalid rock {0}'.format(rock_type), meta_header)
-
-            
             if 'latitude' in sample_obj.keys() and 'longitude' in sample_obj.keys():
                 sample_obj['location_coords'] =  u'SRID=4326;POINT ({0} {1})'.format(sample_obj['latitude'], sample_obj['longitude'])
                 del(sample_obj['latitude'])
                 del(sample_obj['longitude'])
+
+            rock_type = sample_obj['rock_type_name']
+            try:
+                sample_obj['rock_type_id'] = RockType.objects.get(name=rock_type).id
+            except:
+                return self.set_err(before_parse_json, i, 'rock_type_id', 'Invalid rock {0}'.format(rock_type), meta_header)
+            
+            
             
             serializer = self.get_serializer(data=sample_obj)
             try:
