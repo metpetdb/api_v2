@@ -28,7 +28,7 @@ class Sample(models.Model):
     aliases = ArrayField(models.CharField(max_length=35, blank=True),
                          blank=True,
                          null=True)
-    collection_date = models.DateTimeField(blank=True, null=True)
+    collection_date = models.DateField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     location_name = models.CharField(max_length=50, blank=True, null=True)
     location_coords = models.PointField()
