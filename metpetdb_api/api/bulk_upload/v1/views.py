@@ -108,13 +108,15 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                           IsOwnerOrReadOnly,)
     http_method_names=['post'] 
 
-    def _handle_metamorphic_regions(self, instance, ids):
+    def _handle_metamorphic_regions(self, instance, regions):
         metamorphic_regions = []
-        for id in ids:
+        for region in regions:
+            if region == '':
+                continue
             try:
-                metamorphic_region = MetamorphicRegion.objects.get(pk=id)
+                metamorphic_region = MetamorphicRegion.objects.get(name=region)
             except:
-                raise ValueError('Invalid metamorphic_region id: {}'
+                raise ValueError('Invalid metamorphic region: {}'
                                  .format(id))
             else:
                 metamorphic_regions.append(metamorphic_region)
@@ -124,10 +126,12 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
     def _handle_metamorphic_grades(self, instance, grades):
         metamorphic_grades = []
         for grade in grades:
+            if grade == '':
+                continue
             try:
                 metamorphic_grade = MetamorphicGrade.objects.get(name=grade)
             except:
-                raise ValueError('Invalid metamorphic_grade : {}'.format(grade))
+                raise ValueError('Invalid metamorphic grade: {}'.format(grade))
             else:
                 metamorphic_grades.append(metamorphic_grade)
         instance.metamorphic_grades = metamorphic_grades
@@ -416,7 +420,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                 if field.lower() in upload_templates.sample_label_mappings.keys():
                     # add proper formatting to date
                     if field.lower() == 'date of collection':
-                        sample_obj[field] = sample_obj[field] + 'T00:00:00.000Z'
+                        sample_obj[field] = sample_obj[field] #+ 'T00:00:00.000Z'
                     # join comments with newline
                     elif field.lower() == 'comment':
                         sample_obj[field] = '\n'.join(sample_obj[field])
@@ -466,17 +470,17 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                 return self.set_err(before_parse_json, i, 'serialization', str(e), meta_header)
         
         
-            metamorphic_region_ids = sample_obj.get('metamorphic_region_id')
-            metamorphic_grades = sample_obj.get('metamorphic_grade')           
+            metamorphic_regions = sample_obj.get('metamorphic_regions')
+            metamorphic_grades = sample_obj.get('metamorphic_grades')           
             references = sample_obj.get('references')
             minerals = sample_obj.get('minerals')
 
-            if metamorphic_region_ids:
+            if metamorphic_regions:
                 try:
                     self._handle_metamorphic_regions(instance,
-                                                     metamorphic_region_ids)
+                                                     metamorphic_regions)
                 except ValueError as err:
-                    return self.set_err(before_parse_json, i, 'metamorphic_region_ids', err.args, meta_header)
+                    return self.set_err(before_parse_json, i, 'metamorphic_regions', err.args, meta_header)
 
             if metamorphic_grades:
                 try:
