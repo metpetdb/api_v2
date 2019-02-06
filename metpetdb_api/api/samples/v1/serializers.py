@@ -62,7 +62,7 @@ class SampleSerializer(DynamicFieldsModelSerializer):
     references = serializers.SerializerMethodField(read_only=True)
     latitude = serializers.SerializerMethodField(read_only=True)
     longitude = serializers.SerializerMethodField(read_only=True)
-    collection_date = serializers.SerializerMethodField(read_only=True)
+    # collection_date = serializers.SerializerMethodField(read_only=True)
 
     images = ImageSerializer(many=True, read_only=True)
 
@@ -99,6 +99,9 @@ class SampleSerializer(DynamicFieldsModelSerializer):
             )
 
     def is_valid(self, raise_exception=False):
+        if self.initial_data.get('latitude') and self.initial_data.get('longitude'):
+            self.initial_data['location_coords'] = "SRID=4326;POINT ("+str(self.initial_data["latitude"])+" "+str(self.initial_data["longitude"])+")"
+            
         super().is_valid(raise_exception)
 
         if self.initial_data.get('owner'):
