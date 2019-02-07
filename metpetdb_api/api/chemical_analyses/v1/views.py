@@ -67,7 +67,8 @@ class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
 
     def _handle_elements(self, instance, params):
         to_add = []
-        for record in params['elements']:
+        for record in params:
+            print(record)
             try:
                 to_add.append({
                     'element': Element.objects.get(pk=record['id']),
@@ -79,9 +80,7 @@ class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
                     'max_amount': record['max_amount']
                 })
             except Element.DoesNotExist:
-                return Response(
-                    data={'error': 'Invalid element id'},
-                    status=400)
+                raise ValueError('Invalid element id: {}'.format(record['id']))
 
         (ChemicalAnalysisElement
          .objects
@@ -103,7 +102,7 @@ class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
 
     def _handle_oxides(self, instance, params):
         to_add = []
-        for record in params['oxides']:
+        for record in params:
             try:
                 to_add.append({
                     'oxide': Oxide.objects.get(pk=record['id']),
@@ -115,9 +114,7 @@ class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
                     'max_amount': record['max_amount']
                 })
             except Oxide.DoesNotExist:
-                return Response(
-                    data={'error': 'Invalid oxide id'},
-                    status=400)
+                raise ValueError('Invalid oxide id: {}'.format(record['id']))
 
         (ChemicalAnalysisOxide
          .objects
@@ -147,38 +144,52 @@ class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
         instance = self.perform_create(serializer)
 
         if request.data.get('elements'):
-            for record in request.data.get('elements'):
-                try:
-                    ChemicalAnalysisElement.objects.create(
-                        chemical_analysis=instance,
-                        element=Element.objects.get(pk=record['id']),
-                        amount=record['amount'],
-                        precision=record['precision'],
-                        precision_type=record['precision_type'],
-                        measurement_unit=record['measurement_unit'],
-                        min_amount=record['min_amount'],
-                        max_amount=record['max_amount'],
-                    )
-                except Element.DoesNotExist:
-                    return Response(data={'error': 'Invalid element id'},
-                                    status=400)
+            try:
+                self._handle_elements(instance,request.data.get('elements'))
+            except ValueError as err:
+                return Response(
+                    data={'error':err.args},
+                    status=400
+                )
+            # for record in request.data.get('elements'):
+            #     try:
+            #         ChemicalAnalysisElement.objects.create(
+            #             chemical_analysis=instance,
+            #             element=Element.objects.get(pk=record['id']),
+            #             amount=record['amount'],
+            #             precision=record['precision'],
+            #             precision_type=record['precision_type'],
+            #             measurement_unit=record['measurement_unit'],
+            #             min_amount=record['min_amount'],
+            #             max_amount=record['max_amount'],
+            #         )
+            #     except Element.DoesNotExist:
+            #         return Response(data={'error': 'Invalid element id'},
+            #                         status=400)
 
         if request.data.get('oxides'):
-            for record in request.data.get('oxides'):
-                try:
-                    ChemicalAnalysisOxide.objects.create(
-                        chemical_analysis=instance,
-                        oxide=Oxide.objects.get(pk=record['id']),
-                        amount=record['amount'],
-                        precision=record['precision'],
-                        precision_type=record['precision_type'],
-                        measurement_unit=record['measurement_unit'],
-                        min_amount=record['min_amount'],
-                        max_amount=record['max_amount'],
-                    )
-                except Oxide.DoesNotExist:
-                    return Response(data={'error': 'Invalid oxide id'},
-                                    status=400)
+            try:
+                self._handle_oxides(instance,request.data.get('oxides'))
+            except ValueError as err:
+                return Response(
+                    data={'error':err.args},
+                    status=400
+                )
+            # for record in request.data.get('oxides'):
+            #     try:
+            #         ChemicalAnalysisOxide.objects.create(
+            #             chemical_analysis=instance,
+            #             oxide=Oxide.objects.get(pk=record['id']),
+            #             amount=record['amount'],
+            #             precision=record['precision'],
+            #             precision_type=record['precision_type'],
+            #             measurement_unit=record['measurement_unit'],
+            #             min_amount=record['min_amount'],
+            #             max_amount=record['max_amount'],
+            #         )
+            #     except Oxide.DoesNotExist:
+            #         return Response(data={'error': 'Invalid oxide id'},
+            #                         status=400)
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data,

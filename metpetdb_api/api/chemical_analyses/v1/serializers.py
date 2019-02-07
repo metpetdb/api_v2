@@ -48,8 +48,8 @@ class ChemicalAnalysisElementSerializer(DynamicFieldsModelSerializer):
 
 
 class ChemicalAnalysisOxideSerializer(DynamicFieldsModelSerializer):
-    # id = serializers.ReadOnlyField(source='oxide.id')
-    # element_id = serializers.ReadOnlyField(source='oxide.element_id')
+    id = serializers.ReadOnlyField(source='oxide.id')
+    element_id = serializers.ReadOnlyField(source='oxide.element_id')
     # oxidation_state = serializers.ReadOnlyField(source='oxide.oxidation_state')
     species = serializers.ReadOnlyField(source='oxide.species')
     # weight = serializers.ReadOnlyField(source='oxide.weight')
@@ -57,19 +57,19 @@ class ChemicalAnalysisOxideSerializer(DynamicFieldsModelSerializer):
         # source='oxide.cations_per_oxide')
     # conversion_factor = serializers.ReadOnlyField(
         # source='oxide.conversion_factor')
-    # order_id = serializers.ReadOnlyField(source='oxide.order_id')
+    order_id = serializers.ReadOnlyField(source='oxide.order_id')
 
     class Meta:
         model = ChemicalAnalysisOxide
         fields = (
-            # 'id', 
-            # 'element_id', 
+            'id', 
+            'element_id', 
             # 'oxidation_state', 
             'species', 
             # 'weight',
             # 'cations_per_oxide', 
             # 'conversion_factor', 
-            # 'order_id',
+            'order_id',
             'amount', 
             'precision', 
             'precision_type', 
@@ -84,17 +84,20 @@ class ChemicalAnalysisSerializer(DynamicFieldsModelSerializer):
     sample = serializers.ReadOnlyField(source='subsample.sample.number')
     sample_id = serializers.ReadOnlyField(source='subsample.sample.id')
     subsample = serializers.ReadOnlyField(source='subsample.name')
+    subsample_id = serializers.ReadOnlyField(source='subsample.id')
     subsample_type = serializers.ReadOnlyField(source='subsample.subsample_type.name')
     mineral = serializers.ReadOnlyField(source='mineral.name')
     elements = ChemicalAnalysisElementSerializer(
         many=True,
         source='chemicalanalysiselement_set',
         required=False,
+        read_only=True
     )
     oxides = ChemicalAnalysisOxideSerializer(
         many=True,
         source='chemicalanalysisoxide_set',
-        required=False
+        required=False,
+        read_only=True
     )
 
     class Meta:
@@ -102,10 +105,12 @@ class ChemicalAnalysisSerializer(DynamicFieldsModelSerializer):
         depth = 1
 
         fields = (
+            'id',
             'owner',
             'sample',
             'sample_id',
             'subsample',
+            'subsample_id',
             'subsample_type',
             'mineral',
             'analysis_method',
@@ -124,7 +129,7 @@ class ChemicalAnalysisSerializer(DynamicFieldsModelSerializer):
             'elements',
             'oxides',
             'total',
-            )
+        )
 
     def is_valid(self, raise_exception=False):
         super().is_valid(raise_exception)
