@@ -54,7 +54,12 @@ class ChemicalAnalysisViewSet(viewsets.ModelViewSet):
 
         if params.get('format') == 'csv':
             serializer = self.get_serializer(qs,many=True)
-            return Response(serializer.data)
+            response = Response(serializer.data)
+            filename = params.get('filename')
+            if filename is None:
+                filename = 'search_results.csv'
+            response['content-disposition'] = "attachment; filename=%s" % filename
+            return response
         else:
             page = self.paginate_queryset(qs)
             if page is not None:
