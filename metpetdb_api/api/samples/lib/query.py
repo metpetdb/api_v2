@@ -93,15 +93,20 @@ def sample_query(user, params, qs):
 
     if params.get('ordering'):
         if params['ordering'] == 'images':
-            # CHANGE ME WHEN FRONTEND ALLOWS TOGGLE
+            # FIX ME WHEN FRONTEND ALLOWS TOGGLE
             qs = qs.annotate(image_count=Count('images')).order_by('-image_count')
         elif params['ordering'] == '-images':
             qs = qs.annotate(image_count=Count('images')).order_by('-image_count')
         elif params['ordering'] == 'chemical_analyses':
-            # CHANGE ME WHEN FRONTEND ALLOWS TOGGLE
+            # FIX ME
             qs = qs.annotate(chem_count=Count('subsamples__chemical_analyses')).order_by('-chem_count')
         elif params['ordering'] == '-chemical_analyses':
             qs = qs.annotate(chem_count=Count('subsamples__chemical_analyses')).order_by('-chem_count')
+        elif params['ordering'] == 'subsamples':
+            # FIX ME
+            qs = qs.annotate(subsample_count=Count('subsamples')).order_by('-subsample_count')
+        elif params['ordering'] == '-subsamples':
+            qs = qs.annotate(subsample_count=Count('subsamples')).order_by('-subsample_count')
         else:
             qs = qs.order_by(params['ordering'])
 
