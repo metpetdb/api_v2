@@ -2,7 +2,7 @@ import json
 
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.gis.geos import Polygon, GEOSException
-from django.db.models import Q, F
+from django.db.models import Q, F, Count
 
 
 def sample_query(user, params, qs):
@@ -92,6 +92,17 @@ def sample_query(user, params, qs):
         qs = qs.filter(sesar_number__in=params['sesar_number'].split(','))
 
     if params.get('ordering'):
-        qs = qs.order_by(params['ordering'])
+        if params['ordering'] == 'images':
+            # CHANGE ME WHEN FRONTEND ALLOWS TOGGLE
+            qs = qs.annotate(image_count=Count('images')).order_by('-image_count')
+        elif params['ordering'] == '-images':
+            qs = qs.annotate(image_count=Count('images')).order_by('-image_count')
+        elif params['ordering'] == 'chemical_analyses':
+            # CHANGE ME WHEN FRONTEND ALLOWS TOGGLE
+            qs = qs.annotate(chem_count=Count('subsamples__chemical_analyses')).order_by('-chem_count')
+        elif params['ordering'] == '-chemical_analyses':
+            qs = qs.annotate(chem_count=Count('subsamples__chemical_analyses')).order_by('-chem_count')
+        else:
+            qs = qs.order_by(params['ordering'])
 
     return qs
