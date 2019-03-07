@@ -16,7 +16,7 @@ class RockType(models.Model):
 
     class Meta:
         db_table = 'rock_types'
-        ordering = ['id']
+        ordering = ['name']
 
 
 class Sample(models.Model):
@@ -110,7 +110,7 @@ class MetamorphicGrade(models.Model):
 
     class Meta:
         db_table = 'metamorphic_grades'
-        ordering = ['id']
+        ordering = ['name']
 
 
 class MetamorphicRegion(models.Model):
@@ -122,7 +122,7 @@ class MetamorphicRegion(models.Model):
 
     class Meta:
         db_table = 'metamorphic_regions'
-        ordering = ['id']
+        ordering = ['name']
 
 
 class Mineral(models.Model):
@@ -137,7 +137,7 @@ class Mineral(models.Model):
 
     class Meta:
         db_table = 'minerals'
-        ordering = ['id']
+        ordering = ['name']
 
 
 class SampleMineral(models.Model):
@@ -218,7 +218,7 @@ class Region(models.Model):
 
     class Meta:
         db_table = 'regions'
-        ordering = ['id']
+        ordering = ['name']
 
 
 class Reference(models.Model):
@@ -227,7 +227,7 @@ class Reference(models.Model):
 
     class Meta:
         db_table = 'references'
-        ordering = ['id']
+        ordering = ['name']
 
 
 class Collector(models.Model):
@@ -236,7 +236,7 @@ class Collector(models.Model):
 
     class Meta:
         db_table = 'collectors'
-        ordering = ['id']
+        ordering = ['name']
 
 # A mapping table to help the migration of old samples to new samples; can
 # be gotten rid of once thi app goes into production.
