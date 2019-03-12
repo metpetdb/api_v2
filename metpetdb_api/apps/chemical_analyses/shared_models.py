@@ -14,7 +14,7 @@ class Element(models.Model):
 
     class Meta:
         db_table = 'elements'
-        ordering = ['id']
+        ordering = ['symbol']
 
 
 class Oxide(models.Model):
@@ -29,4 +29,4 @@ class Oxide(models.Model):
 
     class Meta:
         db_table = 'oxides'
-        ordering = ['id']
+        ordering = ['species']
