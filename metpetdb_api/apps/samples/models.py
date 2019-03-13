@@ -66,7 +66,7 @@ class Sample(models.Model):
 
     class Meta:
         db_table = 'samples'
-        ordering = ['id']
+        ordering = ['number']
 
 
 class SubsampleType(models.Model):
@@ -75,7 +75,7 @@ class SubsampleType(models.Model):
 
     class Meta:
         db_table = 'subsample_types'
-        ordering = ['id']
+        ordering = ['name']
 
 
 class Subsample(models.Model):
@@ -187,7 +187,7 @@ class GeoReference(models.Model):
 
     class Meta:
         db_table = 'georeferences'
-        ordering = ['id']
+        ordering = ['name']
 
 
 # Following are models for easy retrieval of sample-related free-text fields
