@@ -64,6 +64,7 @@ import json
 import sys
 import urllib.request
 from csv import reader
+import re
 
 
 sample_labels_dict = {
@@ -76,6 +77,24 @@ sample_labels_dict = {
     'Date of Collection':'collection_date',
     'Present Sample Location':'location_name',
     'Country':'country'
+}
+
+chem_analysis_labels_dict = {
+    'Sample':'sample',
+    'Subsample':'subsample',
+    'Mineral':'mineral',
+    'Method':'analysis_method',
+    'Subsample Type':'subsample_type',
+    'Reference':'reference',
+    'Point':'spot_id',
+    'Analytical Facility':'where_done',
+    'Analysis Date':'analysis_date',
+    'Analyst':'analyst',
+    'Reference X':'reference_x',
+    'Reference Y':'reference_y',
+    'Stage X':'stage_x',
+    'Stage Y':'stage_y',
+    'Total':'total'
 }
 
 
@@ -268,9 +287,42 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
         # Manual transaction for ease of exception handling
         transaction.set_autocommit(False)
         
-        for i,chemical_analyses_obj in enumerate(JSON):
+        for i,analysis_obj in enumerate(JSON):
+
+            print(analysis_obj)
+
+            # REQUIRED FIELDS:
+            #   Sample [Number]
+            #   Subsample [Number]
+            #   Point
+            #   Mineral 
+            #   Method
+            #   Subsample Type
+
+            # OPTIONAL FIELDS:
+            #   Analytical Facility
+            #   Analysis Date
+            #   Analyst
+            #   Reference Image (???)
+            #   X Reference
+            #   Y Reference
+            #   X Stage
+            #   Y Stage
+            #   Total
+            #   Comment
+            #   [elements]
+            #   [oxides]
+            #   [precisions]
+
+
+            # PROCEDURE:
+            ## ensure all required fields are present
+            #### this is NOT enforced by the serializer like with samples!
+            ## verify all other fields are valid optional fields or minerals
+            ## manipulate data for serializer
+            ## create serializer
             try:
-                chemical_analyses_obj['owner'] = request.data.get('owner')    
+                analysis_obj['owner'] = request.data.get('owner')    
             except:
                 self.rollback_transaction()
                 return Response(
@@ -278,57 +330,104 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                     status = 400
                 )
 
-            #fix date formatting
-            if chemical_analyses_obj['analysis_date']:
-                chemical_analyses_obj['analysis_date'] += 'T00:00:00.000Z'
+            element_oxide_pattern = re.compile(r"(.+)\((ppm|wt\%)\)",re.IGNORECASE)
+            precision_pattern = re.compile(r"(.+) precision \((abs|rel)\)",re.IGNORECASE)
+            elements_n_oxides = []
+            precisions = {}
 
+            fields = [x for x in analysis_obj.keys()]
+            for field in fields:
+                if field.lower() in upload_templates.chem_analysis_label_mappings.keys():
+                    # add proper formatting to date (?)
+                    if field.lower() == 'analysis date':
+                        analysis_obj[field] = chemical_analyses_obj[field] #+'T00:00:00.000Z'
+                    # join comments with newline
+                    elif field.lower() == 'comment':
+                        analysis_obj[field] = '\n'.join(analysis_obj[field])
+                    # replace field with corresponding serializer fieldname
+                    analysis_obj[upload_templates.chem_analysis_label_mappings[field.lower()]] = analysis_obj[field]
+                    del(analysis_obj[field])
+                elif field != 'errors' and field not in upload_templates.chem_analysis_label_mappings.values(): # must be element, oxide, or precision
+                    m = element_oxide_pattern.match(field)
+                    if m is not None:
+                        g = m.groups()
+                        print('element or oxide: {}({})'.format(g[0],g[1]))
+                        name = g[0].strip()
+                        elements_n_oxides.append({
+                            'name':name,
+                            'measurement_unit':g[1],
+                            'amount':analysis_obj[field]
+                            })
+                    else:
+                        m = precision_pattern.match(field)
+                        if m is not None:
+                            g = m.groups()
+                            print('precision: {} Precision ({})'.format(g[0],g[1]))
+                            precisions[g[0]] = {'type':g[1],'value':analysis_obj[field]}
+                        else:
+                            print('no match: {}'.format(field))
+
+            # make sure the mineral exists
             try:
-                chemical_analyses_obj['mineral_id'] = Mineral.objects.get(name=chemical_analyses_obj['mineral'][0]['name']).id
+                analysis_obj['mineral_id'] = Mineral.objects.get(name=analysis_obj['mineral']).id
             
             except Exception as err:
-                return self.set_err(before_parse_json, i, 'mineral_id', 'invalid mineral', meta_header)           
+                return self.set_err(before_parse_json, i, 'mineral_id', 'invalid mineral', meta_header)
 
-            elements_to_add = []
-            for element in chemical_analyses_obj['element']:
+            # check for required fields that aren't required in model (aaaa...)
+            if (analysis_obj.get('point')) is None:
+                return self.set_err(before_parse_json, i, 'point', 'analysis point identifier is required', meta_header)
+            if (analysis_obj.get('analysis_method')) is None:
+                return self.set_err(before_parse_json, i, 'analysis_method', 'analysis method is required', meta_header)
+
+
+            analysis_obj['oxides'] = []
+            analysis_obj['elements'] = []
+
+            for entry in elements_n_oxides:
                 try:
-                    elements_to_add.append(
-                        {'id': Element.objects.get(name=element['name']).id,
-                         'amount': element['amount'],
+                    p = None
+                    ptype = None
+                    if (precisions.get(entry['name'])) is not None:
+                        p = precisions[entry['name']]['value']
+                        ptype = precisions[entry['name']]['type']
+
+                    analysis_obj['elements'].append(
+                        {'id': Element.objects.get(symbol=entry['name']).id,
+                         'amount': entry['amount'],
+                         'precision': p, 
+                         'precision_type': ptype,
+                         'measurement_unit': entry['measurement_unit'], 
                          #TODO consider adding these fields
                          #They are not specified in the template
-                         'precision': None, 
-                         'precision_type':  None,
-                         'measurement_unit': None, 
                          'min_amount': None, 
                          'max_amount': None 
                         })
                 except:
-                    return self.set_err(before_parse_json, i, 'element', 'invalid element {0}'.format(element), meta_header)
+                    try:
+                        analysis_obj['oxides'].append(
+                            {'id' : Oxide.objects.get(species=entry['name']).id,
+                             'amount': entry['amount'],
+                             'precision': p, 
+                             'precision_type': ptype,
+                             'measurement_unit': entry['measurement_unit'],
+                             #TODO consider adding
+                             #They are currently not specified in the template
+                             'min_amount': None,
+                             'max_amount': None
+                            })
+                    except:
+                        return self.set_err(before_parse_json, i, 'element/oxide', 'invalid element or oxide {0}'.format(oxide), meta_header)
 
-            chemical_analyses_obj['elements'] = elements_to_add
 
-            oxides_to_add = []
+            if len(analysis_obj['elements']) == 0:
+                del(analysis_obj['elements'])
+            if len(analysis_obj['oxides']) == 0:
+                del(analysis_obj['oxides'])
 
-            for oxide in chemical_analyses_obj['oxide']:
-                try:
-                    oxides_to_add.append(
-                        {   'id' : Oxide.objects.get(species=oxide['name']).id,
-                            'amount': oxide['amount'],
-                            #TODO consider adding
-                            #They are currently not specified in the template
-                            'precision': None, 
-                            'precision_type': None,
-                            'measurement_unit': None,
-                            'min_amount': None,
-                            'max_amount': None
+   
 
-                        })
-                except:
-                    return self.set_err(before_parse_json, i, 'oxide', 'invalid oxide {0}'.format(oxide), meta_header)
-                            
-            chemical_analyses_obj['oxides'] = oxides_to_add    
-
-            serializer = self.get_serializer(data=chemical_analyses_obj)
+            serializer = self.get_serializer(data=analysis_obj)
             try:
                 serializer.is_valid(raise_exception=True)
                 instance = self.perform_create(serializer)
@@ -336,8 +435,8 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                 return self.set_err(before_parse_json, i, 'serialization', str(e), meta_header)
             
 
-            if chemical_analyses_obj.get('elements'):
-                for record in chemical_analyses_obj.get('elements'):
+            if analysis_obj.get('elements'):
+                for record in analysis_obj.get('elements'):
                     try:
                         ChemicalAnalysisElement.objects.create(
                             chemical_analysis=instance,
@@ -352,8 +451,8 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                     except Element.DoesNotExist:
                         return self.set_err(before_parse_json, i, 'elements', 'invalid element id', meta_header)
 
-            if chemical_analyses_obj.get('oxides'):
-                for record in chemical_analyses_obj.get('oxides'):
+            if analysis_obj.get('oxides'):
+                for record in analysis_obj.get('oxides'):
                     try:
                         ChemicalAnalysisOxide.objects.create(
                             chemical_analysis=instance,
@@ -449,10 +548,10 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                     status = 400
                 )
 
-            if 'latitude' in sample_obj.keys() and 'longitude' in sample_obj.keys():
-                sample_obj['location_coords'] =  u'SRID=4326;POINT ({0} {1})'.format(sample_obj['latitude'], sample_obj['longitude'])
-                del(sample_obj['latitude'])
-                del(sample_obj['longitude'])
+            # if 'latitude' in sample_obj.keys() and 'longitude' in sample_obj.keys():
+            #     sample_obj['location_coords'] =  u'SRID=4326;POINT ({0} {1})'.format(sample_obj['latitude'], sample_obj['longitude'])
+            #     del(sample_obj['latitude'])
+            #     del(sample_obj['longitude'])
 
             rock_type = sample_obj['rock_type_name']
             try:

@@ -45,6 +45,24 @@ sample_label_mappings = {
     'metamorphic grade':'metamorphic_grades'
 }
 
+chem_analysis_label_mappings = {
+    'sample':'sample',
+    'subsample':'subsample',
+    'mineral':'mineral',
+    'method':'analysis_method',
+    'subsample type':'subsample_type',
+    'reference':'reference',
+    'point':'spot_id',
+    'analytical facility':'where_done',
+    'analysis date':'analysis_date',
+    'analyst':'analyst',
+    'reference x':'reference_x',
+    'reference y':'reference_y',
+    'stage x':'stage_x',
+    'stage y':'stage_y',
+    'total':'total'
+}
+
 
 class Template:
     def __init__(self, c_types = [], required = [], db_types = [], types = {}): 
