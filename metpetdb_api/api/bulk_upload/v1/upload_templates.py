@@ -60,7 +60,8 @@ chem_analysis_label_mappings = {
     'reference y':'reference_y',
     'stage x':'stage_x',
     'stage y':'stage_y',
-    'total':'total'
+    'total':'total',
+    'comment':'description'
 }
 
 
@@ -169,8 +170,8 @@ class Template:
 
 class ChemicalAnalysesTemplate(Template):
     def __init__(self):
-        complex_types = ["comment", "element", "oxide","mineral"]
-        required = ["subsample_id", "spot_id", "mineral", "analysis_method"]
+        complex_types = ["comment","element","oxide"]
+        required = ["sample","subsample","point","mineral","method","subsample type"]
         db_types = ["element", "oxide"]
         types = {"comment": str, "stage_x" : float, "stage_y" : float, "reference_x": float, "reference_y": float}
         Template.__init__(self, complex_types, required, db_types, types)

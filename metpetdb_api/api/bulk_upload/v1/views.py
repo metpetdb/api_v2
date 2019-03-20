@@ -283,13 +283,11 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
     
     def parse_chemical_analyses(self, request, JSON, meta_header):
         before_parse_json = list(JSON)
-        
+
         # Manual transaction for ease of exception handling
         transaction.set_autocommit(False)
         
         for i,analysis_obj in enumerate(JSON):
-
-            print(analysis_obj)
 
             # REQUIRED FIELDS:
             #   Sample [Number]
@@ -340,18 +338,23 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                 if field.lower() in upload_templates.chem_analysis_label_mappings.keys():
                     # add proper formatting to date (?)
                     if field.lower() == 'analysis date':
-                        analysis_obj[field] = chemical_analyses_obj[field] #+'T00:00:00.000Z'
+                        if analysis_obj[field] != '':
+                            analysis_obj[field] = analysis_obj[field] +'T00:00:00.000Z'
                     # join comments with newline
                     elif field.lower() == 'comment':
                         analysis_obj[field] = '\n'.join(analysis_obj[field])
                     # replace field with corresponding serializer fieldname
-                    analysis_obj[upload_templates.chem_analysis_label_mappings[field.lower()]] = analysis_obj[field]
-                    del(analysis_obj[field])
+                    if (analysis_obj[field] == ''):
+                        analysis_obj[upload_templates.chem_analysis_label_mappings[field.lower()]] = None
+                    else:
+                        analysis_obj[upload_templates.chem_analysis_label_mappings[field.lower()]] = analysis_obj[field]
+                    # print('{} : {}'.format(field,analysis_obj[upload_templates.chem_analysis_label_mappings[field.lower()]]))
+                    # del(analysis_obj[field])
                 elif field != 'errors' and field not in upload_templates.chem_analysis_label_mappings.values(): # must be element, oxide, or precision
                     m = element_oxide_pattern.match(field)
                     if m is not None:
                         g = m.groups()
-                        print('element or oxide: {}({})'.format(g[0],g[1]))
+                        # print('element or oxide: {}({})'.format(g[0],g[1]))
                         name = g[0].strip()
                         elements_n_oxides.append({
                             'name':name,
@@ -362,7 +365,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                         m = precision_pattern.match(field)
                         if m is not None:
                             g = m.groups()
-                            print('precision: {} Precision ({})'.format(g[0],g[1]))
+                            # print('precision: {} Precision ({})'.format(g[0],g[1]))
                             precisions[g[0]] = {'type':g[1],'value':analysis_obj[field]}
                         else:
                             print('no match: {}'.format(field))
@@ -375,16 +378,45 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                 return self.set_err(before_parse_json, i, 'mineral_id', 'invalid mineral', meta_header)
 
             # check for required fields that aren't required in model (aaaa...)
-            if (analysis_obj.get('point')) is None:
-                return self.set_err(before_parse_json, i, 'point', 'analysis point identifier is required', meta_header)
+            if (analysis_obj.get('spot_id')) is None:
+                return self.set_err(before_parse_json, i, 'spot_id', 'analysis point identifier is required', meta_header)
             if (analysis_obj.get('analysis_method')) is None:
                 return self.set_err(before_parse_json, i, 'analysis_method', 'analysis method is required', meta_header)
 
+            # make sure sample exists; if subsample doesn't exist, create it
+            try:
+                sample = Sample.objects.get(owner_id=analysis_obj['owner'],number=analysis_obj['sample'])
+                analysis_obj['sample_id'] = sample.id
+                try: 
+                    analysis_obj['subsample_id'] = Subsample.objects.get(sample_id=analysis_obj['sample_id'],name=analysis_obj['subsample']).id
+                except Exception as err:
+                    print(err)
+                    try:
+                        sub_type = SubsampleType.objects.get(name=analysis_obj['subsample_type'])
+                        Subsample.objects.create(
+                            name=analysis_obj['subsample'],
+                            sample=sample,
+                            owner_id=analysis_obj['owner'],
+                            subsample_type=sub_type,
+                        )
+                        analysis_obj['subsample_id'] = Subsample.objects.get(
+                            name=analysis_obj['subsample'],
+                            sample_id=analysis_obj['sample_id'],
+                            owner_id=analysis_obj['owner'],
+                            subsample_type=sub_type).id
+                    except Exception as err:
+                        print(err)
+                        return self.set_err(before_parse_json, i, 'subsample', err, meta_header)
+            except Exception as err:
+                print(err)
+                return self.set_err(before_parse_json, i, 'sample', err, meta_header)
 
             analysis_obj['oxides'] = []
             analysis_obj['elements'] = []
 
             for entry in elements_n_oxides:
+                if entry['amount'] == '':
+                    continue
                 try:
                     p = None
                     ptype = None
@@ -392,8 +424,9 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                         p = precisions[entry['name']]['value']
                         ptype = precisions[entry['name']]['type']
 
+                    obj = Element.objects.get(symbol=entry['name'])
                     analysis_obj['elements'].append(
-                        {'id': Element.objects.get(symbol=entry['name']).id,
+                        {'id': obj.id,
                          'amount': entry['amount'],
                          'precision': p, 
                          'precision_type': ptype,
@@ -405,8 +438,9 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                         })
                 except:
                     try:
+                        obj = Oxide.objects.get(species=entry['name'])
                         analysis_obj['oxides'].append(
-                            {'id' : Oxide.objects.get(species=entry['name']).id,
+                            {'id' : obj.id,
                              'amount': entry['amount'],
                              'precision': p, 
                              'precision_type': ptype,
@@ -432,11 +466,14 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                 serializer.is_valid(raise_exception=True)
                 instance = self.perform_create(serializer)
             except Exception as e:
+                print(e)
+                print(serializer.initial_data)
                 return self.set_err(before_parse_json, i, 'serialization', str(e), meta_header)
             
 
             if analysis_obj.get('elements'):
                 for record in analysis_obj.get('elements'):
+                    # print(record)   
                     try:
                         ChemicalAnalysisElement.objects.create(
                             chemical_analysis=instance,
@@ -445,14 +482,15 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                             precision=record['precision'],
                             precision_type=record['precision_type'],
                             measurement_unit=record['measurement_unit'],
-                            min_amount=record['min_amount'],
-                            max_amount=record['max_amount'],
+                            # min_amount=record['min_amount'],
+                            # max_amount=record['max_amount'],
                         )
                     except Element.DoesNotExist:
                         return self.set_err(before_parse_json, i, 'elements', 'invalid element id', meta_header)
 
             if analysis_obj.get('oxides'):
                 for record in analysis_obj.get('oxides'):
+                    # print(record)
                     try:
                         ChemicalAnalysisOxide.objects.create(
                             chemical_analysis=instance,
@@ -461,8 +499,8 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                             precision=record['precision'],
                             precision_type=record['precision_type'],
                             measurement_unit=record['measurement_unit'],
-                            min_amount=record['min_amount'],
-                            max_amount=record['max_amount'],
+                            # min_amount=record['min_amount'],
+                            # max_amount=record['max_amount'],
                         )
                     except Oxide.DoesNotExist:
                         return self.set_err(before_parse_json, i, 'oxides', 'invalid oxide id', meta_header)
@@ -485,7 +523,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
 
         for i,sample_obj in enumerate(JSON):
 
-            print(sample_obj)
+            # print(sample_obj)
 
             # REQUIRED FIELDS:
             #   Sample Number
