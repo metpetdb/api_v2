@@ -118,7 +118,7 @@ class Parser:
             lined = self.line_split(content)
             return  self.template.parse(lined) # return the JSON ready file
         except Exception as err:
-            print(err)
+            # print(err)
             raise ValueError(str(err))
 
 class BulkUploadViewSet(viewsets.ModelViewSet):
@@ -367,8 +367,8 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                             g = m.groups()
                             # print('precision: {} Precision ({})'.format(g[0],g[1]))
                             precisions[g[0]] = {'type':g[1],'value':analysis_obj[field]}
-                        else:
-                            print('no match: {}'.format(field))
+                        # else:
+                        #     print('no match: {}'.format(field))
 
             # make sure the mineral exists
             try:
@@ -390,7 +390,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                 try: 
                     analysis_obj['subsample_id'] = Subsample.objects.get(sample_id=analysis_obj['sample_id'],name=analysis_obj['subsample']).id
                 except Exception as err:
-                    print(err)
+                    # print(err)
                     try:
                         sub_type = SubsampleType.objects.get(name=analysis_obj['subsample_type'])
                         Subsample.objects.create(
@@ -405,10 +405,10 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                             owner_id=analysis_obj['owner'],
                             subsample_type=sub_type).id
                     except Exception as err:
-                        print(err)
+                        # print(err)
                         return self.set_err(before_parse_json, i, 'subsample', err, meta_header)
             except Exception as err:
-                print(err)
+                # print(err)
                 return self.set_err(before_parse_json, i, 'sample', err, meta_header)
 
             analysis_obj['oxides'] = []
@@ -466,8 +466,8 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                 serializer.is_valid(raise_exception=True)
                 instance = self.perform_create(serializer)
             except Exception as e:
-                print(e)
-                print(serializer.initial_data)
+                # print(e)
+                # print(serializer.initial_data)
                 return self.set_err(before_parse_json, i, 'serialization', str(e), meta_header)
             
 
@@ -563,7 +563,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                         sample_obj[field] = '\n'.join(sample_obj[field])
                     # replace field with corresponding serializer fieldname
                     sample_obj[upload_templates.sample_label_mappings[field.lower()]] = sample_obj[field]
-                    del(sample_obj[field])
+                    # del(sample_obj[field])
                 elif field != 'errors' and field not in upload_templates.sample_label_mappings.values(): # it had better be a mineral
                     try: 
                         amount = sample_obj[field]
@@ -572,7 +572,7 @@ class BulkUploadViewSet(viewsets.ModelViewSet):
                              'name':field,
                              'amount':amount})
                     except:
-                        print(field)
+                        # print(field)
                         return self.set_err(before_parse_json, i, 'minerals', 'Invalid mineral {}'.format(field), meta_header)
 
             sample_obj['minerals'] = minerals

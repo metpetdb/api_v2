@@ -155,7 +155,7 @@ class Template:
                 heading = header[j]
                               
                 field = data[i][j]
-                print("{}: {}".format(heading,data[i][j]))
+                # print("{}: {}".format(heading,data[i][j]))
                 if self.is_complex(heading):
                     tmp_result.set_field_complex(heading,field)
                 else: tmp_result.set_field_simple(heading, field)
@@ -220,22 +220,22 @@ class SampleTemplate(Template):
         return 0
     
     def get_meta_header(self,header):
-        mappings = sample_label_mappings
+        mappings = {}
         added = set()
         meta_header = []
         itr = iter(header)
         for heading in itr:
-            if heading.lower() == 'latitude':
-                for i in range (0,2): heading = next(itr)
-                meta_header.append((('latitude','longitude'),'Location'))
-            elif heading not in added:
+            # if heading.lower() == 'latitude':
+            #     for i in range (0,2): heading = next(itr)
+            #     meta_header.append((('latitude','longitude'),'Location'))
+            if heading not in added:
                 if heading.lower() in mappings.keys():
                     meta_header.append((heading.lower(),heading))
                     added.add(heading)
                 else:
                     meta_header.append((heading, heading))
                     added.add(heading)
-        print("\nMETA-HEADER:")
-        print(meta_header)
-        print("\n\n")
+        # print("\nMETA-HEADER:")
+        # print(meta_header)
+        # print("\n\n")
         return meta_header
