@@ -66,6 +66,7 @@ class Sample(models.Model):
 
     class Meta:
         db_table = 'samples'
+        unique_together = (('number','owner'))
         ordering = ['number']
 
 
@@ -89,6 +90,7 @@ class Subsample(models.Model):
 
     class Meta:
         db_table = 'subsamples'
+        unique_together = (('name','sample','owner'))
         ordering = ['id']
 
 
