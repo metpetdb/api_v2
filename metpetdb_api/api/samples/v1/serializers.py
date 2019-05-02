@@ -96,6 +96,7 @@ class SampleSerializer(DynamicFieldsModelSerializer):
             'images',
             'subsample_ids',
             'chemical_analyses_ids',
+            'public_data',
             )
 
     def is_valid(self, raise_exception=False):
