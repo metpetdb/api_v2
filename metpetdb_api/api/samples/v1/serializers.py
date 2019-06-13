@@ -21,10 +21,33 @@ from apps.samples.models import (
 )
 from apps.users.models import User
 
-SAMPLE_FIELDS = ('number', 'aliases', 'collection_date', 'description',
-                 'location_name', 'location_coords', 'location_error',
-                 'date_precision', 'country', 'regions', 'collector_name',
-                 'collector_id', 'sesar_number', 'image')
+SAMPLE_FIELDS = ('id', #
+                 'number', 
+                 # 'aliases', 
+                 'owner', #
+                 'regions', 
+                 'country',
+                 'rock_type', #
+                 'metamorphic_grades', #
+                 'metamorphic_regions', #
+                 'minerals', #
+                 'references', #
+                 'longitude',
+                 'latitude',
+                 #'location_coords', 
+                 'location_error',
+                 'sesar_number', 
+                 'collector_name',
+                 # 'collector_id', 
+                 'collection_date', 
+                 # 'date_precision', 
+                 'location_name', 
+                 'description',
+                 # 'image', 
+                 'images',
+                 'subsample_ids', #
+                 'chemical_analyses_ids', #
+                 'public_data',)
 
 SUBSAMPLE_FIELDS = ('name')
 
@@ -73,37 +96,15 @@ class SampleSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Sample
         depth = 1
-        fields = (
-            'id',
-            'number',
-            'owner',
-            'regions',
-            'country',
-            'rock_type',
-            'metamorphic_grades',
-            'metamorphic_regions',
-            'minerals',
-            'references',
-            'longitude',
-            'latitude',
-            'location_coords',
-            'location_error',
-            # 'igsn',
-            'collector_name',
-            'collection_date',
-            'location_name',
-            'description',
-            'images',
-            'subsample_ids',
-            'chemical_analyses_ids',
-            'public_data',
-            )
+        fields = SAMPLE_FIELDS
 
     def is_valid(self, raise_exception=False):
         if self.initial_data.get('latitude') and self.initial_data.get('longitude'):
-            self.initial_data['location_coords'] = "SRID=4326;POINT ("+str(self.initial_data["latitude"])+" "+str(self.initial_data["longitude"])+")"
+            self.initial_data['location_coords'] = "SRID=4326;POINT ("+str(self.initial_data["longitude"])+" "+str(self.initial_data["latitude"])+")"
             
         super().is_valid(raise_exception)
+
+        self._validated_data.update({'location_coords':self.initial_data['location_coords']})
 
         if self.initial_data.get('owner'):
             self._validated_data.update(
@@ -128,7 +129,7 @@ class SampleSerializer(DynamicFieldsModelSerializer):
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
-            if attr in SAMPLE_FIELDS:
+            # if attr in SAMPLE_FIELDS:
                 setattr(instance, attr, value)
         instance.save()
 
