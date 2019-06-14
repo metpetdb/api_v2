@@ -21,7 +21,7 @@ class ImageViewSet(viewsets.ModelViewSet):
                           IsOwnerOrReadOnly)
 
   def get_serializer(self, *args, **kwargs):
-    # not sure what this is doing yet
+    # FIXME not sure what this is doing yet
     # if self.request.method == 'PUT':
       # kwargs['partial'] = True
     return super().get_serializer(*args, **kwargs)
