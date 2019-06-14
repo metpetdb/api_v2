@@ -28,7 +28,7 @@ ELEMENT = 'element'
 DWELL_TIME = 'dwelltime'
 CURRENT = 'current'
 VOLTAGE = 'voltage'
-XRAY_IMAGE = 'xrayimage'
+XRAY_IMAGE = 'xraymap'
 
 required_headers = {SAMPLE_NUMBER, IMAGE_TYPE}
 
@@ -52,8 +52,29 @@ class ImageSerializer(serializers.ModelSerializer):
                   'description', 'comments')
     image = VersatileImageFieldSerializer(sizes='image_sizes', required=False)
     image_type = ImageTypeSerializer(read_only=True)
-    comments = ImageCommentsSerializer(many=True)
+    comments = ImageCommentsSerializer(many=True,required=False)
     owner = UserSerializer(read_only=True)
+
+    def is_valid(self, raise_exception=False):
+        super().is_valid(raise_exception)
+
+        if self.initial_data.get('image_type'):
+            self._validated_data.update({'image_type':ImageType.objects.get(pk=self.initial_data['image_type'])})
+        
+        if self.initial_data.get('owner'):
+            self._validated_data.update(
+                {'owner': User.objects.get(pk=self.initial_data['owner'])})
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            if attr in self.fields:
+                setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        return instance
 
 
 class ImageContainerSerializer(serializers.ModelSerializer):
@@ -146,7 +167,7 @@ class ImageContainerSerializer(serializers.ModelSerializer):
         sample, subsample, public_data = None, None, False
         if self.initial_data.get('owner'):
             owner = User.objects.get(pk=self.initial_data['owner']);
-        if len(subsample_name) == 0:
+        if not subsample_name or len(subsample_name) == 0:
             sample = Sample.objects.get(number=sample_number,owner=owner)
             public_data = sample.public_data
         else:
@@ -157,7 +178,7 @@ class ImageContainerSerializer(serializers.ModelSerializer):
                 owner = None
                 if self.initial_data.get('owner'):
                     owner = User.objects.get(pk=self.initial_data['owner'])
-                Subsample.objects.create(
+                subsample = Subsample.objects.create(
                     name=subsample_name,
                     sample=subsample_sample,
                     subsample_type=SubsampleType.objects.get(name=subsample_type),
@@ -169,12 +190,13 @@ class ImageContainerSerializer(serializers.ModelSerializer):
     @staticmethod
     def create_xray_image(image_type, values, header_to_index, created_image, dwell_time, current, voltage):
         image_type_value = re.sub('[^a-z]+', '', image_type.lower())
+        print(image_type_value)
         if image_type_value == XRAY_IMAGE:
             element = values[header_to_index[ELEMENT]]
             if not element:
                 raise serializers.ValidationError('Expected element for xray image, but none provided')
             xray_image = XrayImage.objects.create(image=created_image,
-                                                  dwell_time=dwell_time,
+                                                  dwelltime=dwell_time,
                                                   current=current,
                                                   voltage=voltage,
                                                   element=element)
