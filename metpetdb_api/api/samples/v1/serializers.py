@@ -85,8 +85,7 @@ class SampleSerializer(DynamicFieldsModelSerializer):
     references = serializers.SerializerMethodField(read_only=True)
     latitude = serializers.SerializerMethodField(read_only=True)
     longitude = serializers.SerializerMethodField(read_only=True)
-    # collection_date = serializers.SerializerMethodField(read_only=True)
-
+    
     images = ImageSerializer(many=True, read_only=True)
 
     # TODO: figure out if there is a better, more efficient way to do this
@@ -208,7 +207,7 @@ class SubsampleSerializer(DynamicFieldsModelSerializer):
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
-            if attr in SUBSAMPLE_FIELDS:
+            if attr in self.fields:
                 setattr(instance, attr, value)
         instance.save()
 

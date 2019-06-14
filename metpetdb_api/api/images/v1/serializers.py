@@ -144,11 +144,13 @@ class ImageContainerSerializer(serializers.ModelSerializer):
 
     def get_sample_subsample_public_data(self, subsample_name, sample_number, subsample_type):
         sample, subsample, public_data = None, None, False
+        if self.initial_data.get('owner'):
+            owner = User.objects.get(pk=self.initial_data['owner']);
         if len(subsample_name) == 0:
-            sample = Sample.objects.get(number=sample_number)
+            sample = Sample.objects.get(number=sample_number,owner=owner)
             public_data = sample.public_data
         else:
-            subsample_sample = Sample.objects.get(number=sample_number)
+            subsample_sample = Sample.objects.get(number=sample_number,owner=owner)
             try:
                 subsample = Subsample.objects.get(sample=subsample_sample, name=subsample_name)
             except Subsample.DoesNotExist:

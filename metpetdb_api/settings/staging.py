@@ -36,7 +36,7 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = env('EMAIL_PORT')
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['165.227.94.236','api.metpetdb.com','api.metpetdb.org']
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -238,5 +238,5 @@ VERSATILEIMAGEFIELD_RENDITION_KEY_SETS = {
     ]
 }
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media_root/')
-MEDIA_URL = '/images/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'images/')
+MEDIA_URL = '/api/images/'
