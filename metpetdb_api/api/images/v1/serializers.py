@@ -69,13 +69,13 @@ class ImageSerializer(serializers.ModelSerializer):
         # add data association: sample, subsample, chemical analysis
         if self.initial_data.get('sample'):
             s = Sample.objects.get(pk=self.initial_data['sample'])
-            if s.owner_id == self.initial_data['owner']:
+            if str(s.owner_id) == self.initial_data['owner']:
                 self._validated_data.update({'sample':s})
             else:
                 raise ValueError("You are not the owner of sample {}".format(self.initial_data['sample']))
         elif self.initial_data.get('subsample'):
             ss = Subsample.objects.get(pk=self.initial_data['subsample'])
-            if ss['owner_id'] == self.initial_data['owner']:
+            if str(ss.owner_id) == self.initial_data['owner']:
                 self._validated_data.update({'subsample':ss})
             else:
                 raise ValueError("You are not the owner of subsample {}".format(self.initial_data['subsample']))
