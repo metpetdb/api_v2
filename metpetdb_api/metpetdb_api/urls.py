@@ -45,7 +45,7 @@ from api.samples.v1.views import (
 )
 from api.users.v1.views import UserViewSet
 
-from api.images.v1.views import ImageContainerViewSet, ImageViewSet
+from api.images.v1.views import ImageContainerViewSet, ImageViewSet, ImageTypeViewSet
 
 from api.bulk_upload.v1.views import BulkUploadViewSet
 
@@ -72,6 +72,7 @@ router.register(r'collectors', CollectorViewSet)
 router.register(r'bulk_upload', BulkUploadViewSet)
 router.register(r'image_sets', ImageContainerViewSet)
 router.register(r'images', ImageViewSet)
+router.register(r'image_types', ImageTypeViewSet)
 
 
 
