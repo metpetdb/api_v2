@@ -3,6 +3,7 @@ from os import sep, listdir
 from rest_framework import serializers
 from apps.images.models import Image, ImageContainer, ImageType, XrayImage, ImageComments
 from apps.samples.models import Sample, Subsample, SubsampleType
+from apps.chemical_analyses.models import ChemicalAnalysis
 from django.core.files import File
 import urllib.request
 from urllib.parse import urlparse, urlencode, urlunparse
@@ -64,6 +65,22 @@ class ImageSerializer(serializers.ModelSerializer):
         if self.initial_data.get('owner'):
             self._validated_data.update(
                 {'owner': User.objects.get(pk=self.initial_data['owner'])})
+
+        if self.initial_data.get('sample'):
+            self._validated_data.update(
+                {'sample':Sample.objects.get(pk=self.initial_data['sample'])})
+        elif self.initial_data.get('subsample'):
+            self._validated_data.update(
+                {'subsample':Subsample.objects.get(pk=self.initial_data['subsample'])})
+        elif self.initial_data.get('chemical_analysis'):
+            ca = ChemicalAnalysis.objects.get(pk=self.initial_data['chemical_analysis'])
+            print(ca)
+        else:
+            return Response(
+                status=404,
+                data={'error':'Cannot upload image without associated \
+                               sample, subsample, or chem analysis!'})
+
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
