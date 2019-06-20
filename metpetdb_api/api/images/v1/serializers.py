@@ -66,20 +66,25 @@ class ImageSerializer(serializers.ModelSerializer):
             self._validated_data.update(
                 {'owner': User.objects.get(pk=self.initial_data['owner'])})
 
+        # add data association: sample, subsample, chemical analysis
         if self.initial_data.get('sample'):
-            self._validated_data.update(
-                {'sample':Sample.objects.get(pk=self.initial_data['sample'])})
+            s = Sample.objects.get(pk=self.initial_data['sample'])
+            if s.owner_id == self.initial_data['owner']:
+                self._validated_data.update({'sample':s})
+            else:
+                raise ValueError("You are not the owner of sample {}".format(self.initial_data['sample']))
         elif self.initial_data.get('subsample'):
-            self._validated_data.update(
-                {'subsample':Subsample.objects.get(pk=self.initial_data['subsample'])})
+            ss = Subsample.objects.get(pk=self.initial_data['subsample'])
+            if ss['owner_id'] == self.initial_data['owner']:
+                self._validated_data.update({'subsample':ss})
+            else:
+                raise ValueError("You are not the owner of subsample {}".format(self.initial_data['subsample']))
         elif self.initial_data.get('chemical_analysis'):
             ca = ChemicalAnalysis.objects.get(pk=self.initial_data['chemical_analysis'])
             print(ca)
         else:
-            return Response(
-                status=404,
-                data={'error':'Cannot upload image without associated \
-                               sample, subsample, or chem analysis!'})
+            raise ValueError('Cannot upload image without associated \
+                                   sample, subsample, or chem analysis!')
 
 
     def update(self, instance, validated_data):

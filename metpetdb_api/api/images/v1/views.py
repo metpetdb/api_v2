@@ -2,8 +2,8 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.images.v1.serializers import ImageContainerSerializer, ImageSerializer
-from apps.images.models import ImageContainer, Image
+from api.images.v1.serializers import ImageContainerSerializer, ImageSerializer, ImageTypeSerializer
+from apps.images.models import ImageContainer, Image, ImageType
 from api.lib.permissions import IsOwnerOrReadOnly, IsSuperuserOrReadOnly
 
 
@@ -12,6 +12,12 @@ class ImageContainerViewSet(viewsets.ModelViewSet):
   serializer_class = ImageContainerSerializer
   permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                         IsOwnerOrReadOnly,)
+
+class ImageTypeViewSet(viewsets.ModelViewSet):
+  queryset = ImageType.objects.all()
+  serializer_class = ImageTypeSerializer
+  permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsSuperuserOrReadOnly,)
 
 
 class ImageViewSet(viewsets.ModelViewSet):
@@ -40,7 +46,12 @@ class ImageViewSet(viewsets.ModelViewSet):
 
 
     serializer = self.get_serializer(data=img_data)
-    serializer.is_valid(raise_exception=True)
+    try:
+      serializer.is_valid(raise_exception=True)
+    except Exception as err:
+      return Response(
+                data={'error':str(err)},
+                status=404)
 
     instance = self.perform_create(serializer)
 
