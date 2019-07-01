@@ -4,6 +4,7 @@ from rest_framework import serializers
 from apps.images.models import Image, ImageContainer, ImageType, XrayImage, ImageComments
 from apps.samples.models import Sample, Subsample, SubsampleType
 from apps.chemical_analyses.models import ChemicalAnalysis
+from apps.chemical_analyses.shared_models import Element
 from django.core.files import File
 import urllib.request
 from urllib.parse import urlparse, urlencode, urlunparse
@@ -50,21 +51,35 @@ class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = ('id', 'image', 'version', 'image_type', 'collector', 'owner', 'public_data', 'scale',
-                  'description', 'comments')
+                  'description', 'element', 'comments')
     image = VersatileImageFieldSerializer(sizes='image_sizes', required=False)
     image_type = ImageTypeSerializer(read_only=True)
     comments = ImageCommentsSerializer(many=True,required=False)
     owner = UserSerializer(read_only=True)
 
     def is_valid(self, raise_exception=False):
+
+        # add an element (for x-ray images)
+        if str(self.initial_data.get('image_type')) == '13':
+            if not self.initial_data.get('element'):
+                raise ValueError('Cannot upload X-Ray Map without associated element!')
+            else:
+                try:
+                    e = Element.objects.get(name=self.initial_data['element'])
+                    self.initial_data['element'] = e.pk
+                    # self._validated_data.update({'element':e})
+                except:
+                    raise ValueError('Could not find element matching {}'.format(self.initial_data['element']))
         super().is_valid(raise_exception)
+
+        if self.initial_data.get('owner'):
+            self._validated_data.update(
+                {'owner': User.objects.get(pk=self.initial_data['owner'])})
 
         if self.initial_data.get('image_type'):
             self._validated_data.update({'image_type':ImageType.objects.get(pk=self.initial_data['image_type'])})
         
-        if self.initial_data.get('owner'):
-            self._validated_data.update(
-                {'owner': User.objects.get(pk=self.initial_data['owner'])})
+
 
         # add data association: sample, subsample, chemical analysis
         if self.initial_data.get('sample'):
