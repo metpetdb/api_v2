@@ -96,7 +96,7 @@ class ImageSerializer(serializers.ModelSerializer):
                 raise ValueError("You are not the owner of subsample {}".format(self.initial_data['subsample']))
         elif self.initial_data.get('chemical_analysis'):
             ca = ChemicalAnalysis.objects.get(pk=self.initial_data['chemical_analysis'])
-            print(ca)
+            #print(ca)
         else:
             raise ValueError('Cannot upload image without associated \
                                    sample, subsample, or chem analysis!')
@@ -227,7 +227,7 @@ class ImageContainerSerializer(serializers.ModelSerializer):
     @staticmethod
     def create_xray_image(image_type, values, header_to_index, created_image, dwell_time, current, voltage):
         image_type_value = re.sub('[^a-z]+', '', image_type.lower())
-        print(image_type_value)
+        #print(image_type_value)
         if image_type_value == XRAY_IMAGE:
             element = values[header_to_index[ELEMENT]]
             if not element:

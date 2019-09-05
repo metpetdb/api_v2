@@ -38,8 +38,8 @@ class ImageViewSet(viewsets.ModelViewSet):
   def create(self, request, *args, **kwargs):
     img_file = request.FILES.get('image')
     if not img_file:
-      print("no image file")
-      return Response(status=404)
+      err = "no image file"
+      return Response(data={'error':err},status=404)
 
     img_data = request.data
     img_data['image'] = img_file

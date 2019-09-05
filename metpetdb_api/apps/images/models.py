@@ -5,6 +5,7 @@ import os
 import uuid
 
 from apps.samples.models import Sample, Subsample
+import apps.chemical_analyses.models
 from apps.chemical_analyses.shared_models import Element
 from django.conf import settings
 from django.contrib.gis.db import models
@@ -62,6 +63,11 @@ class Image(models.Model):
     # move to respective classes
     sample = models.ForeignKey(Sample, on_delete=models.CASCADE, blank=True, null=True, related_name='images')
     subsample = models.ForeignKey(Subsample, on_delete=models.CASCADE, blank=True, null=True, related_name='images')
+    chemical_analysis = models.ForeignKey('chemical_analyses.ChemicalAnalysis', 
+                                          on_delete=models.CASCADE, blank=True, 
+                                          null=True, related_name='images')
+
+    element = models.ForeignKey(Element,blank=True,null=True)
 
     element = models.ForeignKey(Element, blank=True, null=True)
 

@@ -22,10 +22,18 @@ def sample_query(user, params, qs):
         qs = qs.filter(pk__in=params['ids'].split(','))
 
     if params.get('collectors'):
-        qs = qs.filter(collector_name__in=params['collectors'].split(','))
+        if params.get('collectors_exact') == 'True':
+            qs = qs.filter(collector_name__in=params['collectors'].split(','))
+        else:
+            rx = r'(' + params['collectors'].replace(',','|') + ')'
+            qs = qs.filter(Q(collector_name__regex=rx))
 
     if params.get('numbers'):
-        qs = qs.filter(number__in=params['numbers'].split(','))
+        if params.get('numbers_exact') == 'True':
+            qs = qs.filter(number__in=params['numbers'].split(','))
+        else:
+            rx = r'(' + params['numbers'].replace(',','|') + ')'
+            qs = qs.filter(Q(number__regex=rx))
 
     if params.get('countries'):
         qs = qs.filter(country__in=params['countries'].split(','))
@@ -68,13 +76,21 @@ def sample_query(user, params, qs):
             qs = qs.filter(minerals__name__in=minerals)
 
     if params.get('owners'):
-        qs = qs.filter(owner__name__in=params['owners'].split(','))
+        if params.get('owners_exact') == 'True':
+            qs = qs.filter(owner__name__in=params['owners'].split(','))
+        else:
+            rx = r'(' + params['owners'].replace(',','|') + ')'
+            qs = qs.filter(Q(owner__name__regex=rx))
 
     if params.get('emails'):
         qs = qs.filter(owner__email__in=params['emails'].split(','))
 
     if params.get('references'):
-        qs = qs.filter(references__name__in=params['references'].split(','))
+        if params.get('references_exact') == 'True':
+            qs = qs.filter(references__name__in=params['references'].split(','))
+        else:
+            rx = r'(' + params['references'].replace(',','|') + ')'
+            qs = qs.filter(Q(references__name__regex=rx))
 
     if params.get('regions'):
         qs = qs.filter(regions__overlap=params['regions'].split(','))
